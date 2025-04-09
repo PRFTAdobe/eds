@@ -1,0 +1,5 @@
+sites:
+  brand-commerce:
+    origin: https://github.com/jhuckins/eds-brand-blog
+  brand-blog:
+    origin: https://github.com/jhuckins/eds-brand-commerce
