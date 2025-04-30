@@ -1,4 +1,4 @@
-name: Inject Test URL into PR Body
+name: Inject Test URL into PR Body and Run Lighthouse Test
 
 on:
   pull_request:
@@ -39,3 +39,29 @@ jobs:
               pull_number: pr.number,
               body: newBody
             });
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract test URL from PR description
+        id: extract
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_DESC=$(gh pr view ${{ github.event.pull_request.number }} --json body -q .body)
+          echo "PR_DESC: $PR_DESC"
+         
+          # extract URL after the marker line
+          TEST_URL=$(echo "$PR_DESC" | sed -n '/DO NOT EDIT BELOW THIS LINE/,$p' | grep -oE 'https?://[a-zA-Z0-9./\-\_\~\?\=]*')
+         
+          if [ -z "$TEST_URL" ]; then
+            echo "No test URL found in PR description."
+            exit 1
+          fi
+          echo "TEST_URL=$TEST_URL" >> $GITHUB_OUTPUT
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse CI on URL
+        run: |
+          lhci collect --url=${{ steps.extract.outputs.TEST_URL }}
