@@ -1,5 +1,8 @@
 name: Sync master repository to clones
-on: [ push, workflow_dispatch ]
+on:
+  workflow_run:
+    workflows: ["CodeQL"]
+    types: completed
 
 jobs:
   sync:
