@@ -10,7 +10,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     outputs:
-      updated-url: ${{ steps.inject.outputs.test_url }}
+      updated-url: ${{ steps.update-pr.outputs.test_url }}
     steps:
       - name: Update PR description with test URL
         id: update-pr
