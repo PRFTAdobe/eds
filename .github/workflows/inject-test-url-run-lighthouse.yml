@@ -48,6 +48,9 @@ jobs:
   lighthouse:
     needs: update-pr-description
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
     - name: Install Lighthouse CI
       run: |
