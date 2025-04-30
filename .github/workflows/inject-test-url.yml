@@ -1,0 +1,41 @@
+name: Inject Test URL into PR Body
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  update-pr-description:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PR description with test URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const headBranch = pr.head.ref;
+
+            const marker = 'DO NOT EDIT BELOW THIS LINE';
+            const separator = '--------------------------------------------------------------';
+            const testUrl = `https://${headBranch}--eds--jhuckins.aem.page`;
+
+            const dynamicBlock = `${marker}\n${separator}\nTest URL:\n${testUrl}`;
+            let newBody;
+
+            // If the marker already exists, replace everything below it
+            if (pr.body && pr.body.includes(marker)) {
+              newBody = pr.body.split(marker)[0].trim() + '\n\n' + dynamicBlock;
+            } else {
+              // Otherwise, just append the block
+              newBody = (pr.body || '').trim() + '\n\n' + dynamicBlock;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: newBody
+            });
