@@ -1,4 +1,4 @@
-name: Inject Test URL into PR Body
+name: Inject Test URL into PR Body and Run Lighthouse Test
 
 on:
   pull_request:
@@ -9,8 +9,11 @@ jobs:
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
+    outputs:
+      updated-url: ${{ steps.inject.outputs.test_url }}
     steps:
       - name: Update PR description with test URL
+        id: inject
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,3 +42,19 @@ jobs:
               pull_number: pr.number,
               body: newBody
             });
+
+            core.setOutput('test_url', testUrl);
+            
+  lighthouse:
+    needs: inject-test-url
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse CI on injected Test URL
+        run: |
+          echo "Testing URL: ${{ needs.inject-test-url.outputs.updated-url }}"
+          lhci collect --url=${{ needs.inject-test-url.outputs.updated-url }}
