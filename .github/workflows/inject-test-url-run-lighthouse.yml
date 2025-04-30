@@ -48,6 +48,8 @@ jobs:
   lighthouse:
     needs: inject-test-url
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli
