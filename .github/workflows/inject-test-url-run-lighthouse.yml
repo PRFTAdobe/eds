@@ -62,7 +62,7 @@ jobs:
     - name: Extract Lighthouse scores
       id: scores
       run: |
-        SCORE_FILE=output/lhr.report.json
+        SCORE_FILE=output/lhreport.json
         PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
