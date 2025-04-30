@@ -6,7 +6,7 @@ on:
   workflow_run:
     workflows: ["Inject Test URL into PR Body"]
     types: completed
-  workflow_dispatch:
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
