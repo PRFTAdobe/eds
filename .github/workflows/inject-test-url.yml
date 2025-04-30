@@ -20,7 +20,7 @@ jobs:
 
             const marker = 'DO NOT EDIT BELOW THIS LINE';
             const separator = '--------------------------------------------------------------';
-            const testUrl = `https://${headBranch}--eds--jhuckins.aem.page`;
+            const testUrl = `https://${headBranch}--eds--jhuckins.aem.live`;
 
             const dynamicBlock = `${marker}\n${separator}\nTest URL:\n${testUrl}`;
             let newBody;
