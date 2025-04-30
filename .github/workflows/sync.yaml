@@ -1,8 +1,9 @@
 name: Sync master repository to clones
 on:
   workflow_run:
-    workflows: ["Inject Test URL into PR Body"]
-    types: [completed]
+    workflows: [Inject Test URL into PR Body]
+    types:
+      - completed
 
 jobs:
   sync:
