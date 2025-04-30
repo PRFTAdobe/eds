@@ -3,9 +3,9 @@
 # but that we use to develop the project template. This includes this
 # particular workflow file.
 on:
-  create:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Inject Test URL into PR Body"]
+    types: completed
   workflow_dispatch:
 jobs:
   cleanup:
