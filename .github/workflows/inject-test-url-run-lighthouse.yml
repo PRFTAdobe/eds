@@ -13,7 +13,7 @@ jobs:
       updated-url: ${{ steps.inject.outputs.test_url }}
     steps:
       - name: Update PR description with test URL
-        id: inject
+        id: update-pr
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -46,7 +46,7 @@ jobs:
             core.setOutput('test_url', testUrl);
             
   lighthouse:
-    needs: inject-test-url
+    needs: update-pr-description
     runs-on: ubuntu-latest
     permissions:
       contents: read
