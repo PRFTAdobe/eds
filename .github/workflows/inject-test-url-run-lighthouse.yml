@@ -9,8 +9,11 @@ jobs:
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
+    outputs:
+      updated-url: ${{ steps.inject.outputs.test_url }}
     steps:
       - name: Update PR description with test URL
+        id: inject
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,29 +42,17 @@ jobs:
               pull_number: pr.number,
               body: newBody
             });
+
+            core.setOutput('test_url', testUrl);
+            
   lighthouse:
+    needs: inject-test-url
     runs-on: ubuntu-latest
     steps:
-      - name: Extract test URL from PR description
-        id: extract
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_DESC=$(gh pr view ${{ github.event.pull_request.number }} --json body -q .body)
-          echo "PR_DESC: $PR_DESC"
-         
-          # extract URL after the marker line
-          TEST_URL=$(echo "$PR_DESC" | sed -n '/DO NOT EDIT BELOW THIS LINE/,$p' | grep -oE 'https?://[a-zA-Z0-9./\-\_\~\?\=]*')
-         
-          if [ -z "$TEST_URL" ]; then
-            echo "No test URL found in PR description."
-            exit 1
-          fi
-          echo "TEST_URL=$TEST_URL" >> $GITHUB_OUTPUT
-
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli
 
-      - name: Run Lighthouse CI on URL
+      - name: Run Lighthouse CI on injected Test URL
         run: |
-          lhci collect --url=${{ steps.extract.outputs.TEST_URL }}
+          echo "Testing URL: ${{ needs.inject-test-url.outputs.updated-url }}"
+          lhci collect --url=${{ needs.inject-test-url.outputs.updated-url }}
