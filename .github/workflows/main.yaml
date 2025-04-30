@@ -1,5 +1,8 @@
 name: Build
-on: [push]
+on:
+  workflow_run:
+    workflows: ["Inject Test URL into PR Body"]
+    types: [completed]
 
 jobs:
   build:
