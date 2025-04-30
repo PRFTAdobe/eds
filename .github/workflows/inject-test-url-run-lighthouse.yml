@@ -56,7 +56,7 @@ jobs:
       run: |
         mkdir output
         lhci collect --url=${{ needs.update-pr-description.outputs.updated-url }} \
-                     --outputPath=output/lhreport.html \
+                     --outputPath=output/lhreport \
                      --output=html --output=json
 
     - name: Extract Lighthouse scores
