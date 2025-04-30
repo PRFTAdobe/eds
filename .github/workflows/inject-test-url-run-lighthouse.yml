@@ -56,5 +56,5 @@ jobs:
 
       - name: Run Lighthouse CI on injected Test URL
         run: |
-          echo "Testing URL: ${{ needs.inject-test-url.outputs.updated-url }}"
-          lhci collect --url=${{ needs.inject-test-url.outputs.updated-url }}
+          echo "Testing URL: ${{ needs.update-pr-description.outputs.updated-url }}"
+          lhci collect --url=${{ needs.update-pr-description.outputs.updated-url }}
