@@ -6,6 +6,8 @@ on:
 
 jobs:
   update-pr-description:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Update PR description with test URL
