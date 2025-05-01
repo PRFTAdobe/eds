@@ -67,10 +67,10 @@ jobs:
       run: |
         mkdir lhci-mobile
         ls -al .lighthouseci
+        ls -al
         mv .lighthouseci/lhr-*.json "lhci-mobile/lighthouse.mobile.report.json"
         mv .lighthouseci/lhr-*.html "lhci-mobile/lighthouse.mobile.report.html"
         ls -al lhci-mobile
-        ls -al
         
     - name: Run LHCI (Desktop)
       run: |
