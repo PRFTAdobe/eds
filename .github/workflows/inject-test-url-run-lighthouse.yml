@@ -61,8 +61,7 @@ jobs:
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
           --settings.emulatedFormFactor=mobile \
           --settings.screenEmulation.mobile=true \
-          --settings.throttlingMethod=devtools \
-          --settings.target=./lhci-mobile
+          --settings.throttlingMethod=devtools
 
     - name: Rename Mobile Output
       run: |
