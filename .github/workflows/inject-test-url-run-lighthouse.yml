@@ -59,14 +59,15 @@ jobs:
       run: |
         mkdir output
         lhci collect --url=${{ needs.update-pr-description.outputs.updated-url }} \
-                     --outputDir=./.lhci-reports
+                     --outputDir=./lhci-reports
         lhci upload --target=filesystem
       
     - name: Extract Lighthouse scores
       id: scores
       run: |
         ls -al
-        SCORE_FILE=.lhci-reports/report.json
+        echo "${{ needs.update-pr-description.outputs.updated-url }}" | perl -pe 's/http(s|)\:\/\/(.*)\?(.*)/$2/g'
+        SCORE_FILE=lhci-reports/report.json
         PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
