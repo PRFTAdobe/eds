@@ -57,12 +57,13 @@ jobs:
         npm install -g @lhci/cli
     - name: Run LHCI (Mobile)
       run: |
+        mkdir lhci-mobile
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
           --settings.emulatedFormFactor=mobile \
           --settings.screenEmulation.mobile=true \
           --settings.throttlingMethod=devtools \
-          --outputDir=./lhci-mobile
+          --outputDir=lhci-mobile
 
     - name: Rename Mobile Output
       run: |
@@ -73,6 +74,7 @@ jobs:
 
     - name: Run LHCI (Desktop)
       run: |
+        mkdir lhci-desktop
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
           --settings.emulatedFormFactor=desktop \
