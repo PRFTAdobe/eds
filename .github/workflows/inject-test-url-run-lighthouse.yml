@@ -55,28 +55,65 @@ jobs:
     - name: Install Lighthouse CI
       run: |
         npm install -g @lhci/cli
-    - name: Run Lighthouse CI on test URL
+    - name: Run LHCI (Mobile)
       run: |
-        mkdir output
-        lhci collect --url=${{ needs.update-pr-description.outputs.updated-url }} \
-                     --outputDir=./lhci-reports
-        lhci upload --target=filesystem
-      
-    - name: Extract Lighthouse scores
-      id: scores
+        lhci collect \
+          --url=${{ needs.update-pr-description.outputs.updated-url }} \
+          --settings.emulatedFormFactor=mobile \
+          --settings.screenEmulation.mobile=true \
+          --settings.throttlingMethod=devtools \
+          --outputDir=./lhci-mobile
+
+    - name: Rename Mobile Output
+      run: |
+        mv lhci-mobile/manifest.json lhci-mobile/manifest.mobile.json
+        mv lhci-mobile/*.report.json lhci-mobile/lighthouse.mobile.report.json
+        mv lhci-mobile/*.report.html lhci-mobile/lighthouse.mobile.report.html
+
+    - name: Run LHCI (Desktop)
+      run: |
+        lhci collect \
+          --url=${{ needs.update-pr-description.outputs.updated-url }} \
+          --settings.emulatedFormFactor=desktop \
+          --settings.screenEmulation.mobile=false \
+          --settings.throttlingMethod=devtools \
+          --outputDir=./lhci-desktop
+
+    - name: Rename Desktop Output
+      run: |
+        mv lhci-desktop/manifest.json lhci-desktop/manifest.desktop.json
+        mv lhci-desktop/*.report.json lhci-desktop/lighthouse.desktop.report.json
+        mv lhci-desktop/*.report.html lhci-desktop/lighthouse.desktop.report.html
+
+    - name: Extract Lighthouse Desktop scores
+      id: desktop-scores
       run: |
         ls -al
-        echo "${{ needs.update-pr-description.outputs.updated-url }}" | perl -pe 's/http(s|)\:\/\/(.*)\?(.*)/$2/g'
-        SCORE_FILE=lhci-reports/report.json
-        PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
-        ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
-        BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
-        SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
+        SCORE_FILE=lhci-desktop/report.json
+        DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
+        DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
+        DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
+        DESKTOP-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
 
-        echo "perf=$PERFORMANCE" >> $GITHUB_OUTPUT
-        echo "access=$ACCESSIBILITY" >> $GITHUB_OUTPUT
-        echo "best=$BEST_PRACTICES" >> $GITHUB_OUTPUT
-        echo "seo=$SEO" >> $GITHUB_OUTPUT
+        echo "perf=$DESKTOP-PERFORMANCE" >> $GITHUB_OUTPUT
+        echo "access=$DESKTOP-ACCESSIBILITY" >> $GITHUB_OUTPUT
+        echo "best=$DESKTOP-BEST_PRACTICES" >> $GITHUB_OUTPUT
+        echo "seo=$DESKTOP-SEO" >> $GITHUB_OUTPUT    
+      
+    - name: Extract Lighthouse Mobile scores
+      id: mobile-scores
+      run: |
+        ls -al
+        SCORE_FILE=lhci-mobile/report.json
+        MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
+        MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
+        MOBILE-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
+        MOBILE-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
+
+        echo "perf=$MOBILE-PERFORMANCE" >> $GITHUB_OUTPUT
+        echo "access=$MOBILE-ACCESSIBILITY" >> $GITHUB_OUTPUT
+        echo "best=$MOBILE-BEST_PRACTICES" >> $GITHUB_OUTPUT
+        echo "seo=$MOBILE-SEO" >> $GITHUB_OUTPUT
 
     - name: Comment Lighthouse summary on PR
       uses: actions/github-script@v6
@@ -88,12 +125,21 @@ jobs:
 
           **Tested URL:** [${{ needs.update-pr-description.outputs.updated-url }}](${{ needs.update-pr-description.outputs.updated-url }})
 
+          ## Desktop
           | Category    | Score |
           |----------------|-------|
-          | Performance  | ${{ steps.scores.outputs.perf }} |
-          | Accessibility | ${{ steps.scores.outputs.access }} |
-          | Best Practices | ${{ steps.scores.outputs.best }} |
-          | SEO      | ${{ steps.scores.outputs.seo }} |
+          | Performance  | ${{ steps.desktop-scores.outputs.perf }} |
+          | Accessibility | ${{ steps.desktop-scores.outputs.access }} |
+          | Best Practices | ${{ steps.desktop-scores.outputs.best }} |
+          | SEO      | ${{ steps.desktop-scores.outputs.seo }} |
+          
+          ## Mobile
+          | Category    | Score |
+          |----------------|-------|
+          | Performance  | ${{ steps.mobile-scores.outputs.perf }} |
+          | Accessibility | ${{ steps.mobile-scores.outputs.access }} |
+          | Best Practices | ${{ steps.mobile-scores.outputs.best }} |
+          | SEO      | ${{ steps.mobile-scores.outputs.seo }} |
 
           [Full HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           `;
