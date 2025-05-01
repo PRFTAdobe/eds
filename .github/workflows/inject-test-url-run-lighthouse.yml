@@ -62,7 +62,7 @@ jobs:
           --settings.emulatedFormFactor=mobile \
           --settings.screenEmulation.mobile=true \
           --settings.throttlingMethod=devtools \
-
+        ls -al
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
