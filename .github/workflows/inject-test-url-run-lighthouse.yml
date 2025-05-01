@@ -67,9 +67,8 @@ jobs:
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
-        mv lhci-mobile/manifest.json lhci-mobile/manifest.mobile.json
-        mv lhci-mobile/*.report.json lhci-mobile/lighthouse.mobile.report.json
-        mv lhci-mobile/*.report.html lhci-mobile/lighthouse.mobile.report.html
+        mv .lighthouseci/*.report.json lhci-mobile/lighthouse.mobile.report.json
+        mv .lighthouseci/*.report.html lhci-mobile/lighthouse.mobile.report.html
         ls -al lhci-mobile
 
     - name: Run LHCI (Desktop)
