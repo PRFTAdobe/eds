@@ -66,11 +66,15 @@ jobs:
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
-        ls -al .lighthouseci
         ls -al
-        mv .lighthouseci/lhr-*.json "lhci-mobile/lighthouse.mobile.report.json"
-        mv .lighthouseci/lhr-*.html "lhci-mobile/lighthouse.mobile.report.html"
-        ls -al lhci-mobile
+        for file in .lighthouseci; do
+            if [[ $file == *.json ]]; then
+              mv $file "lhci-mobile/lighthouse.mobile.report.json"
+            fi
+            if [[ $file == *.html ]]; then
+              mv $file "lhci-mobile/lighthouse.mobile.report.html"
+            fi
+        done
         
     - name: Run LHCI (Desktop)
       run: |
