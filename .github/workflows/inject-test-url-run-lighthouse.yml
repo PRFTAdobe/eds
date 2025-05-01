@@ -66,8 +66,10 @@ jobs:
         ls -al .lighthouseci
     - name: Rename Mobile Output
       run: |
-        mv .lighthouseci/lhr-*.json .lighthouseci/lighthouse-mobile-report.json
-        mv .lighthouseci/lhr-*.html .lighthouseci/lighthouse-mobile-report.html
+        cd .lighthouseci
+        mv lhr-*.json lighthouse.mobile.report.json
+        mv lhr-*.html lighthouse.mobile.report.html
+        cd ..
         ls -al .lighthouseci
     - name: Run LHCI (Desktop)
       run: |
