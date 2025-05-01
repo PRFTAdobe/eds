@@ -63,8 +63,7 @@ jobs:
           --settings.screenEmulation.mobile=true \
           --settings.throttlingMethod=devtools \
           --settings.target=./lhci-mobile
-        ls -al
-        cat .lighthouseci
+        ls -al .lighthouseci
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
