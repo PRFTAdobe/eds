@@ -62,13 +62,14 @@ jobs:
           --settings.emulatedFormFactor=mobile \
           --settings.screenEmulation.mobile=true \
           --settings.throttlingMethod=devtools \
+          --settings.target=./lhci-mobile
         ls -al
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
-        mv manifest.json lhci-mobile/manifest.mobile.json
-        mv *.report.json lhci-mobile/lighthouse.mobile.report.json
-        mv *.report.html lhci-mobile/lighthouse.mobile.report.html
+        mv lhci-mobile/manifest.json lhci-mobile/manifest.mobile.json
+        mv lhci-mobile/*.report.json lhci-mobile/lighthouse.mobile.report.json
+        mv lhci-mobile/*.report.html lhci-mobile/lighthouse.mobile.report.html
         ls -al lhci-mobile
 
     - name: Run LHCI (Desktop)
