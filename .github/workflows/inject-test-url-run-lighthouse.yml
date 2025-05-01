@@ -67,7 +67,7 @@ jobs:
 
     - name: Rename Mobile Output
       run: |
-        ls -al
+        ls -al lhci-mobile
         mv lhci-mobile/manifest.json lhci-mobile/manifest.mobile.json
         mv lhci-mobile/*.report.json lhci-mobile/lighthouse.mobile.report.json
         mv lhci-mobile/*.report.html lhci-mobile/lighthouse.mobile.report.html
