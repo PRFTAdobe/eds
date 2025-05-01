@@ -66,11 +66,9 @@ jobs:
         ls -al .lighthouseci
     - name: Rename Mobile Output
       run: |
-        mkdir lhci-mobile
-        mv .lighthouseci/lhr-*.json lhci-mobile/lighthouse.mobile.report.json
-        mv .lighthouseci/lhr-*.html lhci-mobile/lighthouse.mobile.report.html
-        ls -al lhci-mobile
-
+        mv .lighthouseci/lhr-*.json .lighthouseci/lighthouse.mobile.report.json
+        mv .lighthouseci/lhr-*.html .lighthouseci/lighthouse.mobile.report.html
+        ls -al .lighthouseci
     - name: Run LHCI (Desktop)
       run: |
         mkdir lhci-desktop
@@ -91,7 +89,7 @@ jobs:
       id: desktop-scores
       run: |
         ls -al
-        SCORE_FILE=lhci-desktop/report.json
+        SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
         DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
@@ -106,7 +104,7 @@ jobs:
       id: mobile-scores
       run: |
         ls -al
-        SCORE_FILE=lhci-mobile/report.json
+        SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
         MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         MOBILE-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
