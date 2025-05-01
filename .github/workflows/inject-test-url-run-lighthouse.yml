@@ -67,14 +67,7 @@ jobs:
       run: |
         mkdir lhci-mobile
         ls -al .lighthouseci
-        for file in .lighthouseci; do
-            if [[ $file == *.json ]]; then
-              mv $file "lhci-mobile/lighthouse.mobile.report.json"
-            fi
-            if [[ $file == *.html ]]; then
-              mv $file "lhci-mobile/lighthouse.mobile.report.html"
-            fi
-        done
+
         
     - name: Run LHCI (Desktop)
       run: |
