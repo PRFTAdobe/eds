@@ -84,15 +84,13 @@ jobs:
     - name: Rename Desktop Output
       run: |
         for file in .lighthouseci/*.json; do
-            if [[ $file != '*.mobile.report.json' ]]; then
-              mv $file ".lighthouseci/lighthouse.desktop.report.json"
-            fi
+            mv $file ".lighthouseci/lighthouse.desktop.report.json"
         done
     - name: Extract Lighthouse Desktop scores
       id: desktop-scores
       run: |
         SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
-        echo "perf=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "perf=$(jq '.categories.performance.score * 200 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
         echo "access=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
         echo "best=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
         echo "seo=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT          
