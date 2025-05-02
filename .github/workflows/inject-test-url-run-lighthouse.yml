@@ -65,8 +65,6 @@ jobs:
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
-        ls -al
-        ls -al .lighthouseci
         for file in .lighthouseci; do
             if [[ $file == *.json ]]; then
               mv $file "lhci-mobile/lighthouse.mobile.report.json"
@@ -75,23 +73,27 @@ jobs:
               mv $file "lhci-mobile/lighthouse.mobile.report.html"
             fi
         done
-        
+        ls -al lhci-mobile
     - name: Run LHCI (Desktop)
       run: |
-        mkdir lhci-desktop
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
           --settings.formFactor=desktop \
           --settings.screenEmulation.mobile=false \
           --settings.throttlingMethod=devtools \
-          --outputDir=./lhci-desktop
 
     - name: Rename Desktop Output
       run: |
-        mv lhci-desktop/manifest.json lhci-desktop/manifest.desktop.json
-        mv lhci-desktop/*.report.json lhci-desktop/lighthouse.desktop.report.json
-        mv lhci-desktop/*.report.html lhci-desktop/lighthouse.desktop.report.html
-
+        mkdir lhci-desktop
+        for file in .lighthouseci; do
+            if [[ $file == *.json ]]; then
+              mv $file "lhci-desktop/lighthouse.desktop.report.json"
+            fi
+            if [[ $file == *.html ]]; then
+              mv $file "lhci-desktop/lighthouse.desktop.report.html"
+            fi
+        done
+        ls -al lhci-desktop
     - name: Extract Lighthouse Desktop scores
       id: desktop-scores
       run: |
