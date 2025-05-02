@@ -66,6 +66,7 @@ jobs:
     - name: Rename Mobile Output
       run: |
         mkdir lhci-mobile
+        ls -al
         ls -al .lighthouseci
         for file in .lighthouseci; do
             if [[ $file == *.json ]]; then
