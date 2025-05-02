@@ -72,6 +72,7 @@ jobs:
               mv $file "lighthouse.mobile.report.html"
             fi
         done
+        ls -al .lighthouseci
     - name: Run LHCI (Desktop)
       run: |
         lhci collect \
@@ -90,11 +91,10 @@ jobs:
               mv $file "lighthouse.desktop.report.html"
             fi
         done
-        ls -al lhci-desktop
+        ls -al .lighthouseci
     - name: Extract Lighthouse Desktop scores
       id: desktop-scores
       run: |
-        ls -al
         SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
         DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
@@ -109,7 +109,6 @@ jobs:
     - name: Extract Lighthouse Mobile scores
       id: mobile-scores
       run: |
-        ls -al
         SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
         MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
