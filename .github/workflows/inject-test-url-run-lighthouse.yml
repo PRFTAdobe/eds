@@ -64,15 +64,9 @@ jobs:
 
     - name: Rename Mobile Output
       run: |
-        for file in .lighthouseci; do
-            if [[ $file == *.json ]]; then
-              mv $file "lighthouse.mobile.report.json"
-            fi
-            if [[ $file == *.html ]]; then
-              mv $file "lighthouse.mobile.report.html"
-            fi
+        for file in .lighthouseci/*.json; do
+            mv $file "lighthouse.mobile.report.json"
         done
-        ls -al .lighthouseci
     - name: Run LHCI (Desktop)
       run: |
         lhci collect \
@@ -83,15 +77,8 @@ jobs:
 
     - name: Rename Desktop Output
       run: |
-        for file in .lighthouseci; do
-            echo $file
-            if [[ $file == *.json ]]; then
-              echo $file
-              mv $file "lighthouse.desktop.report.json"
-            fi
-            if [[ $file == *.html ]]; then
-              mv $file "lighthouse.desktop.report.html"
-            fi
+        for file in .lighthouseci/*.json; do
+            mv $file "lighthouse.desktop.report.json"
         done
         ls -al .lighthouseci
     - name: Extract Lighthouse Desktop scores
