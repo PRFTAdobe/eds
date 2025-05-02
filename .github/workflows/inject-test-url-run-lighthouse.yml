@@ -84,6 +84,7 @@ jobs:
     - name: Rename Desktop Output
       run: |
         for file in .lighthouseci; do
+            echo $file
             if [[ $file == *.json ]]; then
               echo $file
               mv $file "lighthouse.desktop.report.json"
