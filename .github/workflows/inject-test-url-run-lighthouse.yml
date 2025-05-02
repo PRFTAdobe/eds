@@ -98,7 +98,7 @@ jobs:
       id: desktop-scores
       run: |
         ls -al
-        SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
+        SCORE_FILE=lhci-desktop/lighthouse.desktop.report.json
         DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
@@ -113,7 +113,7 @@ jobs:
       id: mobile-scores
       run: |
         ls -al
-        SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
+        SCORE_FILE=lhci-mobile/lighthouse.mobile.report.json
         MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         MOBILE-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
