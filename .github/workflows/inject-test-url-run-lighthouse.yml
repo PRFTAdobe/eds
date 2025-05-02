@@ -59,6 +59,7 @@ jobs:
       run: |
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
+          --settings.formFactor=mobile \
           --settings.screenEmulation.mobile=true \
           --settings.throttlingMethod=devtools
 
@@ -94,15 +95,10 @@ jobs:
       id: mobile-scores
       run: |
         SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
-        MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
-        MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
-        MOBILE-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
-        MOBILE-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
-
-        echo "perf=$MOBILE-PERFORMANCE" >> $GITHUB_OUTPUT
-        echo "access=$MOBILE-ACCESSIBILITY" >> $GITHUB_OUTPUT
-        echo "best=$MOBILE-BEST_PRACTICES" >> $GITHUB_OUTPUT
-        echo "seo=$MOBILE-SEO" >> $GITHUB_OUTPUT
+        echo "perf=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "access=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "best=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "seo=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT  
 
     - name: Comment Lighthouse summary on PR
       uses: actions/github-script@v6
