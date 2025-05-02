@@ -85,7 +85,7 @@ jobs:
       id: desktop-scores
       run: |
         SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
-        DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
+        DESKTOP-PERFORMANCE='$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)'
         DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
         DESKTOP-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
