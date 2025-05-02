@@ -59,7 +59,6 @@ jobs:
       run: |
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
-          --settings.emulatedFormFactor=mobile \
           --settings.screenEmulation.mobile=true \
           --settings.throttlingMethod=devtools
 
@@ -82,7 +81,7 @@ jobs:
         mkdir lhci-desktop
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
-          --settings.emulatedFormFactor=desktop \
+          --settings.formFactor=desktop \
           --settings.screenEmulation.mobile=false \
           --settings.throttlingMethod=devtools \
           --outputDir=./lhci-desktop
