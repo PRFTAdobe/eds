@@ -68,6 +68,7 @@ jobs:
         for file in .lighthouseci/*.json; do
             mv $file ".lighthouseci/lighthouse.mobile.report.json"
         done
+        ls -al .lighthouseci
     - name: Run LHCI (Desktop)
       run: |
         lhci collect \
