@@ -65,7 +65,7 @@ jobs:
     - name: Rename Mobile Output
       run: |
         for file in .lighthouseci/*.json; do
-            mv $file "lighthouse.mobile.report.json"
+            mv $file ".lighthouseci/lighthouse.mobile.report.json"
         done
     - name: Run LHCI (Desktop)
       run: |
@@ -78,7 +78,7 @@ jobs:
     - name: Rename Desktop Output
       run: |
         for file in .lighthouseci/*.json; do
-            mv $file "lighthouse.desktop.report.json"
+            mv $file ".lighthouseci/lighthouse.desktop.report.json"
         done
         ls -al .lighthouseci
     - name: Extract Lighthouse Desktop scores
