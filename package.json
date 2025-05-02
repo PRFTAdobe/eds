@@ -8,7 +8,7 @@
     "lint:css": "stylelint blocks/**/*.css styles/*.css",
     "lint": "npm run lint:js && npm run lint:css",
     "prettier:check": "prettier --check \"./**/*.{json,css}\"",
-		"prettier:write": "prettier --write \"./**/*.{js,jsx,json,css,scss}\"",
+    "prettier:write": "prettier --write \"./**/*.{js,jsx,json,css,scss}\"",
     "prepare": "husky"
   },
   "repository": {
