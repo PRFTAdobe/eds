@@ -64,16 +64,14 @@ jobs:
 
     - name: Rename Mobile Output
       run: |
-        mkdir lhci-mobile
         for file in .lighthouseci; do
             if [[ $file == *.json ]]; then
-              mv $file "lhci-mobile/lighthouse.mobile.report.json"
+              mv $file "lighthouse.mobile.report.json"
             fi
             if [[ $file == *.html ]]; then
-              mv $file "lhci-mobile/lighthouse.mobile.report.html"
+              mv $file "lighthouse.mobile.report.html"
             fi
         done
-        ls -al lhci-mobile
     - name: Run LHCI (Desktop)
       run: |
         lhci collect \
@@ -84,13 +82,12 @@ jobs:
 
     - name: Rename Desktop Output
       run: |
-        mkdir lhci-desktop
         for file in .lighthouseci; do
             if [[ $file == *.json ]]; then
-              mv $file "lhci-desktop/lighthouse.desktop.report.json"
+              mv $file "lighthouse.desktop.report.json"
             fi
             if [[ $file == *.html ]]; then
-              mv $file "lhci-desktop/lighthouse.desktop.report.html"
+              mv $file "lighthouse.desktop.report.html"
             fi
         done
         ls -al lhci-desktop
@@ -98,7 +95,7 @@ jobs:
       id: desktop-scores
       run: |
         ls -al
-        SCORE_FILE=lhci-desktop/lighthouse.desktop.report.json
+        SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
         DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
@@ -113,7 +110,7 @@ jobs:
       id: mobile-scores
       run: |
         ls -al
-        SCORE_FILE=lhci-mobile/lighthouse.mobile.report.json
+        SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
         MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
         MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
         MOBILE-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
