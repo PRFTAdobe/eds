@@ -85,6 +85,7 @@ jobs:
       run: |
         for file in .lighthouseci; do
             if [[ $file == *.json ]]; then
+              echo $file
               mv $file "lighthouse.desktop.report.json"
             fi
             if [[ $file == *.html ]]; then
