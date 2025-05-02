@@ -71,10 +71,10 @@ jobs:
       id: mobile-scores
       run: |
         SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
-        echo "perf=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
-        echo "access=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
-        echo "best=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
-        echo "seo=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT       
+        echo "perf=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE) mob" >> $GITHUB_OUTPUT
+        echo "access=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE) mob" >> $GITHUB_OUTPUT
+        echo "best=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE) mob" >> $GITHUB_OUTPUT
+        echo "seo=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE) mob" >> $GITHUB_OUTPUT       
     - name: Run LHCI (Desktop)
       run: |
         lhci collect \
