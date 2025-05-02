@@ -78,6 +78,7 @@ jobs:
       run: |
         lhci collect \
           --url=${{ needs.update-pr-description.outputs.updated-url }} \
+          --settings.formFactor=desktop \
           --settings.psiStrategy=desktop \
           --settings.screenEmulation.mobile=false \
           --settings.throttlingMethod=devtools
