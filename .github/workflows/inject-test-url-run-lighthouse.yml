@@ -65,8 +65,7 @@ jobs:
       run: |
         for file in .lighthouseci/*.json; do
             mv $file ".lighthouseci/lighthouse.mobile.report.json"
-        done
-        ls -al .lighthouseci        
+        done      
     - name: Extract Lighthouse Mobile scores
       id: mobile-scores
       run: |
@@ -85,9 +84,10 @@ jobs:
     - name: Rename Desktop Output
       run: |
         for file in .lighthouseci/*.json; do
-            mv $file ".lighthouseci/lighthouse.desktop.report.json"
+            if [[ $file != '*.mobile.report.json' ]]; then
+              mv $file ".lighthouseci/lighthouse.desktop.report.json"
+            fi
         done
-        ls -al .lighthouseci
     - name: Extract Lighthouse Desktop scores
       id: desktop-scores
       run: |
@@ -121,9 +121,6 @@ jobs:
           | Accessibility | ${{ steps.mobile-scores.outputs.access }} |
           | Best Practices | ${{ steps.mobile-scores.outputs.best }} |
           | SEO      | ${{ steps.mobile-scores.outputs.seo }} |
-
-          [Full HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          `;
 
           const { owner, repo } = context.repo;
           const prNumber = context.payload.pull_request.number;
