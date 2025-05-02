@@ -85,15 +85,10 @@ jobs:
       id: desktop-scores
       run: |
         SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
-        DESKTOP-PERFORMANCE='$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)'
-        DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
-        DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
-        DESKTOP-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
-
-        echo "perf=$DESKTOP-PERFORMANCE" >> $GITHUB_OUTPUT
-        echo "access=$DESKTOP-ACCESSIBILITY" >> $GITHUB_OUTPUT
-        echo "best=$DESKTOP-BEST_PRACTICES" >> $GITHUB_OUTPUT
-        echo "seo=$DESKTOP-SEO" >> $GITHUB_OUTPUT    
+        echo "perf=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "access=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "best=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT
+        echo "seo=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)" >> $GITHUB_OUTPUT    
       
     - name: Extract Lighthouse Mobile scores
       id: mobile-scores
