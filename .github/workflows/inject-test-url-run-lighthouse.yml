@@ -44,61 +44,121 @@ jobs:
             });
 
             core.setOutput('test_url', testUrl);
-            
-lighthouse:
- needs: update-pr-description
- runs-on: ubuntu-latest
- steps:
-  - name: Install Lighthouse CI
-    run: npm install -g @lhci/cli
 
-  - name: Run Lighthouse CI on test URL
-    run: |
-      mkdir output
-      lhci collect --url=${{ needs.update-pr-description.outputs.updated-url }} \
-          --outputPath=output/lhreport.html \
-          --output=html --output=json
+  lighthouse:
+    needs: update-pr-description
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+    - name: Install Lighthouse CI
+      run: |
+        npm install -g @lhci/cli
+    - name: Run LHCI (Mobile)
+      run: |
+        lhci collect \
+          --url=${{ needs.update-pr-description.outputs.updated-url }} \
+          --settings.screenEmulation.mobile=true \
+          --settings.throttlingMethod=devtools
 
-  - name: Extract Lighthouse scores
-    id: scores
-    run: |
-      SCORE_FILE=output/lhr.report.json
-      PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
-      ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
-      BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
-      SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
+    - name: Rename Mobile Output
+      run: |
+        mkdir lhci-mobile
+        for file in .lighthouseci; do
+            if [[ $file == *.json ]]; then
+              mv $file "lhci-mobile/lighthouse.mobile.report.json"
+            fi
+            if [[ $file == *.html ]]; then
+              mv $file "lhci-mobile/lighthouse.mobile.report.html"
+            fi
+        done
+        ls -al lhci-mobile
+    - name: Run LHCI (Desktop)
+      run: |
+        lhci collect \
+          --url=${{ needs.update-pr-description.outputs.updated-url }} \
+          --settings.formFactor=desktop \
+          --settings.screenEmulation.mobile=false \
+          --settings.throttlingMethod=devtools \
 
-      echo "perf=$PERFORMANCE" >> $GITHUB_OUTPUT
-      echo "access=$ACCESSIBILITY" >> $GITHUB_OUTPUT
-      echo "best=$BEST_PRACTICES" >> $GITHUB_OUTPUT
-      echo "seo=$SEO" >> $GITHUB_OUTPUT
+    - name: Rename Desktop Output
+      run: |
+        mkdir lhci-desktop
+        for file in .lighthouseci; do
+            if [[ $file == *.json ]]; then
+              mv $file "lhci-desktop/lighthouse.desktop.report.json"
+            fi
+            if [[ $file == *.html ]]; then
+              mv $file "lhci-desktop/lighthouse.desktop.report.html"
+            fi
+        done
+        ls -al lhci-desktop
+    - name: Extract Lighthouse Desktop scores
+      id: desktop-scores
+      run: |
+        ls -al
+        SCORE_FILE=.lighthouseci/lighthouse.desktop.report.json
+        DESKTOP-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
+        DESKTOP-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
+        DESKTOP-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
+        DESKTOP-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
 
-  - name: Comment Lighthouse summary on PR
-    uses: actions/github-script@v6
-    with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    script: |
-     const body = `
-      ### Lighthouse Audit Report
+        echo "perf=$DESKTOP-PERFORMANCE" >> $GITHUB_OUTPUT
+        echo "access=$DESKTOP-ACCESSIBILITY" >> $GITHUB_OUTPUT
+        echo "best=$DESKTOP-BEST_PRACTICES" >> $GITHUB_OUTPUT
+        echo "seo=$DESKTOP-SEO" >> $GITHUB_OUTPUT    
       
-      **Tested URL:** [${{ needs.update-pr-description.outputs.updated-url }}](${{ needs.update-pr-description.outputs.updated-url }})
-      
-      | Category    | Score |
-      |----------------|-------|
-      | Performance  | ${{ steps.scores.outputs.perf }} |
-      | Accessibility | ${{ steps.scores.outputs.access }} |
-      | Best Practices | ${{ steps.scores.outputs.best }} |
-      | SEO      | ${{ steps.scores.outputs.seo }} |
-      
-       [Full HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-      `;
+    - name: Extract Lighthouse Mobile scores
+      id: mobile-scores
+      run: |
+        ls -al
+        SCORE_FILE=.lighthouseci/lighthouse.mobile.report.json
+        MOBILE-PERFORMANCE=$(jq '.categories.performance.score * 100 | floor' $SCORE_FILE)
+        MOBILE-ACCESSIBILITY=$(jq '.categories.accessibility.score * 100 | floor' $SCORE_FILE)
+        MOBILE-BEST_PRACTICES=$(jq '.categories["best-practices"].score * 100 | floor' $SCORE_FILE)
+        MOBILE-SEO=$(jq '.categories.seo.score * 100 | floor' $SCORE_FILE)
 
-     const { owner, repo } = context.repo;
-     const prNumber = context.payload.pull_request.number;
+        echo "perf=$MOBILE-PERFORMANCE" >> $GITHUB_OUTPUT
+        echo "access=$MOBILE-ACCESSIBILITY" >> $GITHUB_OUTPUT
+        echo "best=$MOBILE-BEST_PRACTICES" >> $GITHUB_OUTPUT
+        echo "seo=$MOBILE-SEO" >> $GITHUB_OUTPUT
 
-     await github.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: prNumber,
-      body
-     });
+    - name: Comment Lighthouse summary on PR
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const body = `
+          ### Lighthouse Audit Report
+
+          **Tested URL:** [${{ needs.update-pr-description.outputs.updated-url }}](${{ needs.update-pr-description.outputs.updated-url }})
+
+          ## Desktop
+          | Category    | Score |
+          |----------------|-------|
+          | Performance  | ${{ steps.desktop-scores.outputs.perf }} |
+          | Accessibility | ${{ steps.desktop-scores.outputs.access }} |
+          | Best Practices | ${{ steps.desktop-scores.outputs.best }} |
+          | SEO      | ${{ steps.desktop-scores.outputs.seo }} |
+          
+          ## Mobile
+          | Category    | Score |
+          |----------------|-------|
+          | Performance  | ${{ steps.mobile-scores.outputs.perf }} |
+          | Accessibility | ${{ steps.mobile-scores.outputs.access }} |
+          | Best Practices | ${{ steps.mobile-scores.outputs.best }} |
+          | SEO      | ${{ steps.mobile-scores.outputs.seo }} |
+
+          [Full HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          `;
+
+          const { owner, repo } = context.repo;
+          const prNumber = context.payload.pull_request.number;
+
+          await github.rest.issues.createComment({
+            owner,
+            repo,
+            issue_number: prNumber,
+            body
+          });
