@@ -11,6 +11,11 @@
     "prettier:write": "prettier --write \"./**/*.{js,jsx,json,css,scss}\"",
     "prepare": "husky"
   },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/adobe/aem-boilerplate.git"
@@ -23,6 +28,7 @@
   "homepage": "https://github.com/adobe/aem-boilerplate#readme",
   "devDependencies": {
     "@babel/eslint-parser": "7.25.9",
+    "@semantic-release/github": "^11.0.2",
     "eslint": "8.57.1",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-plugin-import": "2.31.0",
