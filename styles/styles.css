@@ -40,7 +40,7 @@
   --nav-height: 64px;
 }
 
-.section .columns-container {
+.section.columns-container {
     background-color: green !important;
 }
 
