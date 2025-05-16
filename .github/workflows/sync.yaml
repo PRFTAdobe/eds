@@ -1,7 +1,7 @@
 name: Sync master repository to clones
 on:
   workflow_run:
-    workflows: [Inject Test URL into PR Body]
+    workflows: [Inject Test URL into PR Body and Run Lighthouse Test]
     types:
       - completed
 
