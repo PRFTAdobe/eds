@@ -1,2 +1,4 @@
 mountpoints:
-    /: https://author-p7752-e729659.adobeaemcloud.com/bin/franklin.delivery/prftadobe/eds/uesourced
+    /: 
+        url: https://author-p7752-e729659.adobeaemcloud.com/bin/franklin.delivery/prftadobe/eds/uesourced
+    
