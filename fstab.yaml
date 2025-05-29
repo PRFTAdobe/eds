@@ -1,2 +1,5 @@
 mountpoints:
-  /: https://drive.google.com/drive/folders/1W3rB7V0H47xnCzV40lQpjugxzykBWxY2?usp=drive_link
+    /: 
+        url: "https://author-p7752-e729659.adobeaemcloud.com/bin/franklin.delivery/prftadobe/eds/uesourced"
+        type: "markup"
+        suffix: ".html"
