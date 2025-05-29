@@ -1,12 +1,5 @@
 {
-  "project": "Example",
-  "plugins": [
-    {
-      "id": "library",
-      "title": "Library",
-      "environments": ["edit"],
-      "url": "/tools/sidekick/library.html",
-      "includePaths": ["**.docx**"]
-    }
-  ]
+  "project": "EDS",
+  "editUrlLabel": "AEM Editor",
+  "editUrlPattern": "{{contentSourceUrl}}{{pathname}}?cmd=open"
 }
