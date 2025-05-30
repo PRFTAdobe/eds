@@ -13,45 +13,39 @@
 /* eslint-env browser */
 function sampleRUM(checkpoint, data) {
   // eslint-disable-next-line max-len
-  const timeShift = () =>
-    window.performance
-      ? window.performance.now()
-      : Date.now() - window.hlx.rum.firstReadTime;
+  const timeShift = () => (window.performance ? window.performance.now() : Date.now() - window.hlx.rum.firstReadTime);
   try {
     window.hlx = window.hlx || {};
     sampleRUM.enhance = () => {};
     if (!window.hlx.rum) {
-      const param = new URLSearchParams(window.location.search).get("rum");
-      const weight =
-        (window.SAMPLE_PAGEVIEWS_AT_RATE === "high" && 10) ||
-        (window.SAMPLE_PAGEVIEWS_AT_RATE === "low" && 1000) ||
-        (param === "on" && 1) ||
-        100;
+      const param = new URLSearchParams(window.location.search).get('rum');
+      const weight = (window.SAMPLE_PAGEVIEWS_AT_RATE === 'high' && 10)
+        || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
+        || (param === 'on' && 1)
+        || 100;
       const id = Math.random().toString(36).slice(-4);
-      const isSelected = param !== "off" && Math.random() * weight < 1;
+      const isSelected = param !== 'off' && Math.random() * weight < 1;
       // eslint-disable-next-line object-curly-newline, max-len
       window.hlx.rum = {
         weight,
         id,
         isSelected,
-        firstReadTime: window.performance
-          ? window.performance.timeOrigin
-          : Date.now(),
+        firstReadTime: window.performance ? window.performance.timeOrigin : Date.now(),
         sampleRUM,
         queue: [],
         collector: (...args) => window.hlx.rum.queue.push(args),
       };
       if (isSelected) {
         const dataFromErrorObj = (error) => {
-          const errData = { source: "undefined error" };
+          const errData = { source: 'undefined error' };
           try {
             errData.target = error.toString();
             errData.source = error.stack
-              .split("\n")
+              .split('\n')
               .filter((line) => line.match(/https?:\/\//))
               .shift()
-              .replace(/at ([^ ]+) \((.+)\)/, "$1@$2")
-              .replace(/ at /, "@")
+              .replace(/at ([^ ]+) \((.+)\)/, '$1@$2')
+              .replace(/ at /, '@')
               .trim();
           } catch (err) {
             /* error structure was not as expected */
@@ -59,27 +53,24 @@ function sampleRUM(checkpoint, data) {
           return errData;
         };
 
-        window.addEventListener("error", ({ error }) => {
+        window.addEventListener('error', ({ error }) => {
           const errData = dataFromErrorObj(error);
-          sampleRUM("error", errData);
+          sampleRUM('error', errData);
         });
 
-        window.addEventListener("unhandledrejection", ({ reason }) => {
+        window.addEventListener('unhandledrejection', ({ reason }) => {
           let errData = {
-            source: "Unhandled Rejection",
-            target: reason || "Unknown",
+            source: 'Unhandled Rejection',
+            target: reason || 'Unknown',
           };
           if (reason instanceof Error) {
             errData = dataFromErrorObj(reason);
           }
-          sampleRUM("error", errData);
+          sampleRUM('error', errData);
         });
 
-        sampleRUM.baseURL =
-          sampleRUM.baseURL ||
-          new URL(window.RUM_BASE || "/", new URL("https://rum.hlx.page"));
-        sampleRUM.collectBaseURL =
-          sampleRUM.collectBaseURL || sampleRUM.baseURL;
+        sampleRUM.baseURL = sampleRUM.baseURL || new URL(window.RUM_BASE || '/', new URL('https://rum.hlx.page'));
+        sampleRUM.collectBaseURL = sampleRUM.collectBaseURL || sampleRUM.baseURL;
         sampleRUM.sendPing = (ck, time, pingData = {}) => {
           // eslint-disable-next-line max-len, object-curly-newline
           const rumData = JSON.stringify({
@@ -92,33 +83,27 @@ function sampleRUM(checkpoint, data) {
           });
           const urlParams = window.RUM_PARAMS
             ? `?${new URLSearchParams(window.RUM_PARAMS).toString()}`
-            : "";
+            : '';
           const { href: url, origin } = new URL(
             `.rum/${weight}${urlParams}`,
             sampleRUM.collectBaseURL,
           );
-          const body =
-            origin === window.location.origin
-              ? new Blob([rumData], { type: "application/json" })
-              : rumData;
+          const body = origin === window.location.origin
+            ? new Blob([rumData], { type: 'application/json' })
+            : rumData;
           navigator.sendBeacon(url, body);
           // eslint-disable-next-line no-console
           console.debug(`ping:${ck}`, pingData);
         };
-        sampleRUM.sendPing("top", timeShift());
+        sampleRUM.sendPing('top', timeShift());
 
         sampleRUM.enhance = () => {
           // only enhance once
           if (document.querySelector('script[src*="rum-enhancer"]')) return;
-          const { enhancerVersion, enhancerHash } =
-            sampleRUM.enhancerContext || {};
-          const script = document.createElement("script");
-          if (enhancerHash) {
-            script.integrity = enhancerHash;
-            script.setAttribute("crossorigin", "anonymous");
-          }
+
+          const script = document.createElement('script');
           script.src = new URL(
-            `.rum/@adobe/helix-rum-enhancer@${enhancerVersion || "^2"}/src/index.js`,
+            '.rum/@adobe/helix-rum-enhancer@^2/src/index.js',
             sampleRUM.baseURL,
           ).href;
           document.head.appendChild(script);
@@ -131,9 +116,7 @@ function sampleRUM(checkpoint, data) {
     if (window.hlx.rum && window.hlx.rum.isSelected && checkpoint) {
       window.hlx.rum.collector(checkpoint, data, timeShift());
     }
-    document.dispatchEvent(
-      new CustomEvent("rum", { detail: { checkpoint, data } }),
-    );
+    document.dispatchEvent(new CustomEvent('rum', { detail: { checkpoint, data } }));
   } catch (error) {
     // something went awry
   }
@@ -144,18 +127,20 @@ function sampleRUM(checkpoint, data) {
  */
 function setup() {
   window.hlx = window.hlx || {};
-  window.hlx.RUM_MASK_URL = "full";
+  window.hlx.RUM_MASK_URL = 'full';
   window.hlx.RUM_MANUAL_ENHANCE = true;
-  window.hlx.codeBasePath = "";
-  window.hlx.lighthouse =
-    new URLSearchParams(window.location.search).get("lighthouse") === "on";
+  window.hlx.codeBasePath = '';
+  window.hlx.lighthouse = new URLSearchParams(window.location.search).get('lighthouse') === 'on';
 
   const scriptEl = document.querySelector('script[src$="/scripts/scripts.js"]');
   if (scriptEl) {
     try {
-      [window.hlx.codeBasePath] = new URL(scriptEl.src).pathname.split(
-        "/scripts/scripts.js",
-      );
+      const scriptURL = new URL(scriptEl.src, window.location);
+      if (scriptURL.host === window.location.host) {
+        [window.hlx.codeBasePath] = scriptURL.pathname.split('/scripts/scripts.js');
+      } else {
+        [window.hlx.codeBasePath] = scriptURL.href.split('/scripts/scripts.js');
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -178,13 +163,13 @@ function init() {
  * @returns {string} The class name
  */
 function toClassName(name) {
-  return typeof name === "string"
+  return typeof name === 'string'
     ? name
-        .toLowerCase()
-        .replace(/[^0-9a-z]/gi, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-    : "";
+      .toLowerCase()
+      .replace(/[^0-9a-z]/gi, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+    : '';
 }
 
 /**
@@ -204,29 +189,29 @@ function toCamelCase(name) {
 // eslint-disable-next-line import/prefer-default-export
 function readBlockConfig(block) {
   const config = {};
-  block.querySelectorAll(":scope > div").forEach((row) => {
+  block.querySelectorAll(':scope > div').forEach((row) => {
     if (row.children) {
       const cols = [...row.children];
       if (cols[1]) {
         const col = cols[1];
         const name = toClassName(cols[0].textContent);
-        let value = "";
-        if (col.querySelector("a")) {
-          const as = [...col.querySelectorAll("a")];
+        let value = '';
+        if (col.querySelector('a')) {
+          const as = [...col.querySelectorAll('a')];
           if (as.length === 1) {
             value = as[0].href;
           } else {
             value = as.map((a) => a.href);
           }
-        } else if (col.querySelector("img")) {
-          const imgs = [...col.querySelectorAll("img")];
+        } else if (col.querySelector('img')) {
+          const imgs = [...col.querySelectorAll('img')];
           if (imgs.length === 1) {
             value = imgs[0].src;
           } else {
             value = imgs.map((img) => img.src);
           }
-        } else if (col.querySelector("p")) {
-          const ps = [...col.querySelectorAll("p")];
+        } else if (col.querySelector('p')) {
+          const ps = [...col.querySelectorAll('p')];
           if (ps.length === 1) {
             value = ps[0].textContent;
           } else {
@@ -247,8 +232,8 @@ function readBlockConfig(block) {
 async function loadCSS(href) {
   return new Promise((resolve, reject) => {
     if (!document.querySelector(`head > link[href="${href}"]`)) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
       link.href = href;
       link.onload = resolve;
       link.onerror = reject;
@@ -267,7 +252,7 @@ async function loadCSS(href) {
 async function loadScript(src, attrs) {
   return new Promise((resolve, reject) => {
     if (!document.querySelector(`head > script[src="${src}"]`)) {
-      const script = document.createElement("script");
+      const script = document.createElement('script');
       script.src = src;
       if (attrs) {
         // eslint-disable-next-line no-restricted-syntax, guard-for-in
@@ -291,11 +276,11 @@ async function loadScript(src, attrs) {
  * @returns {string} The metadata value(s)
  */
 function getMetadata(name, doc = document) {
-  const attr = name && name.includes(":") ? "property" : "name";
+  const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = [...doc.head.querySelectorAll(`meta[${attr}="${name}"]`)]
     .map((m) => m.content)
-    .join(", ");
-  return meta || "";
+    .join(', ');
+  return meta || '';
 }
 
 /**
@@ -308,49 +293,37 @@ function getMetadata(name, doc = document) {
  */
 function createOptimizedPicture(
   src,
-  alt = "",
+  alt = '',
   eager = false,
-  breakpoints = [
-    { media: "(min-width: 600px)", width: "2000" },
-    { width: "750" },
-  ],
+  breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '750' }],
 ) {
   const url = new URL(src, window.location.href);
-  const picture = document.createElement("picture");
+  const picture = document.createElement('picture');
   const { pathname } = url;
-  const ext = pathname.substring(pathname.lastIndexOf(".") + 1);
+  const ext = pathname.substring(pathname.lastIndexOf('.') + 1);
 
   // webp
   breakpoints.forEach((br) => {
-    const source = document.createElement("source");
-    if (br.media) source.setAttribute("media", br.media);
-    source.setAttribute("type", "image/webp");
-    source.setAttribute(
-      "srcset",
-      `${pathname}?width=${br.width}&format=webply&optimize=medium`,
-    );
+    const source = document.createElement('source');
+    if (br.media) source.setAttribute('media', br.media);
+    source.setAttribute('type', 'image/webp');
+    source.setAttribute('srcset', `${pathname}?width=${br.width}&format=webply&optimize=medium`);
     picture.appendChild(source);
   });
 
   // fallback
   breakpoints.forEach((br, i) => {
     if (i < breakpoints.length - 1) {
-      const source = document.createElement("source");
-      if (br.media) source.setAttribute("media", br.media);
-      source.setAttribute(
-        "srcset",
-        `${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
-      );
+      const source = document.createElement('source');
+      if (br.media) source.setAttribute('media', br.media);
+      source.setAttribute('srcset', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);
       picture.appendChild(source);
     } else {
-      const img = document.createElement("img");
-      img.setAttribute("loading", eager ? "eager" : "lazy");
-      img.setAttribute("alt", alt);
+      const img = document.createElement('img');
+      img.setAttribute('loading', eager ? 'eager' : 'lazy');
+      img.setAttribute('alt', alt);
       picture.appendChild(img);
-      img.setAttribute(
-        "src",
-        `${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
-      );
+      img.setAttribute('src', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);
     }
   });
 
@@ -362,13 +335,13 @@ function createOptimizedPicture(
  */
 function decorateTemplateAndTheme() {
   const addClasses = (element, classes) => {
-    classes.split(",").forEach((c) => {
+    classes.split(',').forEach((c) => {
       element.classList.add(toClassName(c.trim()));
     });
   };
-  const template = getMetadata("template");
+  const template = getMetadata('template');
   if (template) addClasses(document.body, template);
-  const theme = getMetadata("theme");
+  const theme = getMetadata('theme');
   if (theme) addClasses(document.body, theme);
 }
 
@@ -378,38 +351,45 @@ function decorateTemplateAndTheme() {
  */
 function wrapTextNodes(block) {
   const validWrappers = [
-    "P",
-    "PRE",
-    "UL",
-    "OL",
-    "PICTURE",
-    "TABLE",
-    "H1",
-    "H2",
-    "H3",
-    "H4",
-    "H5",
-    "H6",
+    'P',
+    'PRE',
+    'UL',
+    'OL',
+    'PICTURE',
+    'TABLE',
+    'H1',
+    'H2',
+    'H3',
+    'H4',
+    'H5',
+    'H6',
   ];
 
   const wrap = (el) => {
-    const wrapper = document.createElement("p");
+    const wrapper = document.createElement('p');
     wrapper.append(...el.childNodes);
+    [...el.attributes]
+      // move the instrumentation from the cell to the new paragraph, also keep the class
+      // in case the content is a buttton and the cell the button-container
+      .filter(({ nodeName }) => nodeName === 'class'
+        || nodeName.startsWith('data-aue')
+        || nodeName.startsWith('data-richtext'))
+      .forEach(({ nodeName, nodeValue }) => {
+        wrapper.setAttribute(nodeName, nodeValue);
+        el.removeAttribute(nodeName);
+      });
     el.append(wrapper);
   };
 
-  block.querySelectorAll(":scope > div > div").forEach((blockColumn) => {
+  block.querySelectorAll(':scope > div > div').forEach((blockColumn) => {
     if (blockColumn.hasChildNodes()) {
-      const hasWrapper =
-        !!blockColumn.firstElementChild &&
-        validWrappers.some(
-          (tagName) => blockColumn.firstElementChild.tagName === tagName,
-        );
+      const hasWrapper = !!blockColumn.firstElementChild
+        && validWrappers.some((tagName) => blockColumn.firstElementChild.tagName === tagName);
       if (!hasWrapper) {
         wrap(blockColumn);
       } else if (
-        blockColumn.firstElementChild.tagName === "PICTURE" &&
-        (blockColumn.children.length > 1 || !!blockColumn.textContent.trim())
+        blockColumn.firstElementChild.tagName === 'PICTURE'
+        && (blockColumn.children.length > 1 || !!blockColumn.textContent.trim())
       ) {
         wrap(blockColumn);
       }
@@ -422,36 +402,33 @@ function wrapTextNodes(block) {
  * @param {Element} element container element
  */
 function decorateButtons(element) {
-  element.querySelectorAll("a").forEach((a) => {
+  element.querySelectorAll('a').forEach((a) => {
     a.title = a.title || a.textContent;
     if (a.href !== a.textContent) {
       const up = a.parentElement;
       const twoup = a.parentElement.parentElement;
-      if (!a.querySelector("img")) {
-        if (
-          up.childNodes.length === 1 &&
-          (up.tagName === "P" || up.tagName === "DIV")
-        ) {
-          a.className = "button"; // default
-          up.classList.add("button-container");
+      if (!a.querySelector('img')) {
+        if (up.childNodes.length === 1 && (up.tagName === 'P' || up.tagName === 'DIV')) {
+          a.className = 'button'; // default
+          up.classList.add('button-container');
         }
         if (
-          up.childNodes.length === 1 &&
-          up.tagName === "STRONG" &&
-          twoup.childNodes.length === 1 &&
-          twoup.tagName === "P"
+          up.childNodes.length === 1
+          && up.tagName === 'STRONG'
+          && twoup.childNodes.length === 1
+          && twoup.tagName === 'P'
         ) {
-          a.className = "button primary";
-          twoup.classList.add("button-container");
+          a.className = 'button primary';
+          twoup.classList.add('button-container');
         }
         if (
-          up.childNodes.length === 1 &&
-          up.tagName === "EM" &&
-          twoup.childNodes.length === 1 &&
-          twoup.tagName === "P"
+          up.childNodes.length === 1
+          && up.tagName === 'EM'
+          && twoup.childNodes.length === 1
+          && twoup.tagName === 'P'
         ) {
-          a.className = "button secondary";
-          twoup.classList.add("button-container");
+          a.className = 'button secondary';
+          twoup.classList.add('button-container');
         }
       }
     }
@@ -464,15 +441,15 @@ function decorateButtons(element) {
  * @param {string} [prefix] prefix to be added to icon src
  * @param {string} [alt] alt text to be added to icon
  */
-function decorateIcon(span, prefix = "", alt = "") {
+function decorateIcon(span, prefix = '', alt = '') {
   const iconName = Array.from(span.classList)
-    .find((c) => c.startsWith("icon-"))
+    .find((c) => c.startsWith('icon-'))
     .substring(5);
-  const img = document.createElement("img");
+  const img = document.createElement('img');
   img.dataset.iconName = iconName;
   img.src = `${window.hlx.codeBasePath}${prefix}/icons/${iconName}.svg`;
   img.alt = alt;
-  img.loading = "lazy";
+  img.loading = 'lazy';
   span.append(img);
 }
 
@@ -481,8 +458,8 @@ function decorateIcon(span, prefix = "", alt = "") {
  * @param {Element} [element] Element containing icons
  * @param {string} [prefix] prefix to be added to icon the src
  */
-function decorateIcons(element, prefix = "") {
-  const icons = [...element.querySelectorAll("span.icon")];
+function decorateIcons(element, prefix = '') {
+  const icons = [...element.querySelectorAll('span.icon')];
   icons.forEach((span) => {
     decorateIcon(span, prefix);
   });
@@ -493,31 +470,31 @@ function decorateIcons(element, prefix = "") {
  * @param {Element} main The container element
  */
 function decorateSections(main) {
-  main.querySelectorAll(":scope > div").forEach((section) => {
+  main.querySelectorAll(':scope > div:not([data-section-status])').forEach((section) => {
     const wrappers = [];
     let defaultContent = false;
     [...section.children].forEach((e) => {
-      if (e.tagName === "DIV" || !defaultContent) {
-        const wrapper = document.createElement("div");
+      if ((e.tagName === 'DIV' && e.className) || !defaultContent) {
+        const wrapper = document.createElement('div');
         wrappers.push(wrapper);
-        defaultContent = e.tagName !== "DIV";
-        if (defaultContent) wrapper.classList.add("default-content-wrapper");
+        defaultContent = e.tagName !== 'DIV' || !e.className;
+        if (defaultContent) wrapper.classList.add('default-content-wrapper');
       }
       wrappers[wrappers.length - 1].append(e);
     });
     wrappers.forEach((wrapper) => section.append(wrapper));
-    section.classList.add("section");
-    section.dataset.sectionStatus = "initialized";
-    section.style.display = "none";
+    section.classList.add('section');
+    section.dataset.sectionStatus = 'initialized';
+    section.style.display = 'none';
 
     // Process section metadata
-    const sectionMeta = section.querySelector("div.section-metadata");
+    const sectionMeta = section.querySelector('div.section-metadata');
     if (sectionMeta) {
       const meta = readBlockConfig(sectionMeta);
       Object.keys(meta).forEach((key) => {
-        if (key === "style") {
+        if (key === 'style') {
           const styles = meta.style
-            .split(",")
+            .split(',')
             .filter((style) => style)
             .map((style) => toClassName(style.trim()));
           styles.forEach((style) => section.classList.add(style));
@@ -536,11 +513,11 @@ function decorateSections(main) {
  * @returns {object} Window placeholders object
  */
 // eslint-disable-next-line import/prefer-default-export
-async function fetchPlaceholders(prefix = "default") {
+async function fetchPlaceholders(prefix = 'default') {
   window.placeholders = window.placeholders || {};
   if (!window.placeholders[prefix]) {
     window.placeholders[prefix] = new Promise((resolve) => {
-      fetch(`${prefix === "default" ? "" : prefix}/placeholders.json`)
+      fetch(`${prefix === 'default' ? '' : prefix}/placeholders.json`)
         .then((resp) => {
           if (resp.ok) {
             return resp.json();
@@ -574,17 +551,17 @@ async function fetchPlaceholders(prefix = "default") {
  */
 function buildBlock(blockName, content) {
   const table = Array.isArray(content) ? content : [[content]];
-  const blockEl = document.createElement("div");
+  const blockEl = document.createElement('div');
   // build image block nested div structure
   blockEl.classList.add(blockName);
   table.forEach((row) => {
-    const rowEl = document.createElement("div");
+    const rowEl = document.createElement('div');
     row.forEach((col) => {
-      const colEl = document.createElement("div");
+      const colEl = document.createElement('div');
       const vals = col.elems ? col.elems : [col];
       vals.forEach((val) => {
         if (val) {
-          if (typeof val === "string") {
+          if (typeof val === 'string') {
             colEl.innerHTML += val;
           } else {
             colEl.appendChild(val);
@@ -604,13 +581,11 @@ function buildBlock(blockName, content) {
  */
 async function loadBlock(block) {
   const status = block.dataset.blockStatus;
-  if (status !== "loading" && status !== "loaded") {
-    block.dataset.blockStatus = "loading";
+  if (status !== 'loading' && status !== 'loaded') {
+    block.dataset.blockStatus = 'loading';
     const { blockName } = block.dataset;
     try {
-      const cssLoaded = loadCSS(
-        `${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`,
-      );
+      const cssLoaded = loadCSS(`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
       const decorationComplete = new Promise((resolve) => {
         (async () => {
           try {
@@ -632,7 +607,7 @@ async function loadBlock(block) {
       // eslint-disable-next-line no-console
       console.log(`failed to load block ${blockName}`, error);
     }
-    block.dataset.blockStatus = "loaded";
+    block.dataset.blockStatus = 'loaded';
   }
   return block;
 }
@@ -643,15 +618,17 @@ async function loadBlock(block) {
  */
 function decorateBlock(block) {
   const shortBlockName = block.classList[0];
-  if (shortBlockName) {
-    block.classList.add("block");
+  if (shortBlockName && !block.dataset.blockStatus) {
+    block.classList.add('block');
     block.dataset.blockName = shortBlockName;
-    block.dataset.blockStatus = "initialized";
+    block.dataset.blockStatus = 'initialized';
     wrapTextNodes(block);
     const blockWrapper = block.parentElement;
     blockWrapper.classList.add(`${shortBlockName}-wrapper`);
-    const section = block.closest(".section");
+    const section = block.closest('.section');
     if (section) section.classList.add(`${shortBlockName}-container`);
+    // eslint-disable-next-line no-use-before-define
+    decorateButtons(block);
   }
 }
 
@@ -660,7 +637,7 @@ function decorateBlock(block) {
  * @param {Element} main The container element
  */
 function decorateBlocks(main) {
-  main.querySelectorAll("div.section > div > div").forEach(decorateBlock);
+  main.querySelectorAll('div.section > div > div').forEach(decorateBlock);
 }
 
 /**
@@ -669,7 +646,7 @@ function decorateBlocks(main) {
  * @returns {Promise}
  */
 async function loadHeader(header) {
-  const headerBlock = buildBlock("header", "");
+  const headerBlock = buildBlock('header', '');
   header.append(headerBlock);
   decorateBlock(headerBlock);
   return loadBlock(headerBlock);
@@ -681,7 +658,7 @@ async function loadHeader(header) {
  * @returns {Promise}
  */
 async function loadFooter(footer) {
-  const footerBlock = buildBlock("footer", "");
+  const footerBlock = buildBlock('footer', '');
   footer.append(footerBlock);
   decorateBlock(footerBlock);
   return loadBlock(footerBlock);
@@ -692,12 +669,12 @@ async function loadFooter(footer) {
  * @param {Element} section section element
  */
 async function waitForFirstImage(section) {
-  const lcpCandidate = section.querySelector("img");
+  const lcpCandidate = section.querySelector('img');
   await new Promise((resolve) => {
     if (lcpCandidate && !lcpCandidate.complete) {
-      lcpCandidate.setAttribute("loading", "eager");
-      lcpCandidate.addEventListener("load", resolve);
-      lcpCandidate.addEventListener("error", resolve);
+      lcpCandidate.setAttribute('loading', 'eager');
+      lcpCandidate.addEventListener('load', resolve);
+      lcpCandidate.addEventListener('error', resolve);
     } else {
       resolve();
     }
@@ -711,15 +688,15 @@ async function waitForFirstImage(section) {
 
 async function loadSection(section, loadCallback) {
   const status = section.dataset.sectionStatus;
-  if (!status || status === "initialized") {
-    section.dataset.sectionStatus = "loading";
-    const blocks = [...section.querySelectorAll("div.block")];
+  if (!status || status === 'initialized') {
+    section.dataset.sectionStatus = 'loading';
+    const blocks = [...section.querySelectorAll('div.block')];
     for (let i = 0; i < blocks.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       await loadBlock(blocks[i]);
     }
     if (loadCallback) await loadCallback(section);
-    section.dataset.sectionStatus = "loaded";
+    section.dataset.sectionStatus = 'loaded';
     section.style.display = null;
   }
 }
@@ -730,7 +707,7 @@ async function loadSection(section, loadCallback) {
  */
 
 async function loadSections(element) {
-  const sections = [...element.querySelectorAll("div.section")];
+  const sections = [...element.querySelectorAll('div.section')];
   for (let i = 0; i < sections.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     await loadSection(sections[i]);
