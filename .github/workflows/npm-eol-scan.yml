@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run XEOL scan on project directory
-        uses: xeol-io/xeol-action@v1
+        uses: xeol-io/xeol-action@v1.1.1
         with:
           path: .                  # Directory to scan
           format: table            # Output format: table, json, xml
