@@ -1,0 +1,22 @@
+name: NPM Packages End of Life Scan
+
+on:
+  push:
+    branches: [ main, dev, stage ]
+  pull_request:
+    branches: [ main, dev, stage ]
+
+jobs:
+  eol-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run XEOL scan on project directory
+        uses: xeol-io/xeol-action@v1
+        with:
+          path: .                  # Directory to scan
+          format: table            # Output format: table, json, xml
+          fail-on-eol: true        # Fail if any package is end-of-life
