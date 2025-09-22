@@ -214,5 +214,123 @@
         "valueType": "string"
       }
     ]
+  },
+  {
+    "id": "embed",
+    "fields": [
+      {
+        "component": "select",
+        "name": "type",
+        "label": "Type",
+        "value": "url",
+        "options": [
+          {
+            "name": "URL",
+            "value": "url"
+          },
+          {
+            "name": "Embeddable",
+            "value": "embeddable"
+          },
+          {
+            "name": "HTML",
+            "value": "html"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "name": "url",
+        "label": "URL",
+        "description": "The URL of the content to embed",
+        "placeholder": "Paste a URL to embeddable content"
+      },
+      {
+        "component": "select",
+        "name": "embeddableResourceType",
+        "label": "Embeddable",
+        "description": "Select an embeddable to include on the page",
+        "options": [
+          {
+            "name": "YouTube",
+            "value": "youtube"
+          },
+          {
+            "name": "Twitter/X",
+            "value": "twitter"
+          },
+          {
+            "name": "Instagram",
+            "value": "instagram"
+          },
+          {
+            "name": "Pinterest",
+            "value": "pinterest"
+          }
+        ]
+      },
+      {
+        "component": "richtext",
+        "name": "html",
+        "label": "HTML",
+        "description": "The code of the content to embed (filtered for security)",
+        "placeholder": "Paste embed code"
+      },
+      {
+        "component": "text",
+        "name": "id",
+        "label": "ID",
+        "description": "HTML ID attribute to apply to the component"
+      },
+      {
+        "component": "text",
+        "name": "videoId",
+        "label": "Video ID",
+        "description": "YouTube video ID (e.g., dQw4w9WgXcQ)"
+      },
+      {
+        "component": "text",
+        "name": "width",
+        "label": "Width",
+        "value": "560",
+        "valueType": "number"
+      },
+      {
+        "component": "text",
+        "name": "height",
+        "label": "Height",
+        "value": "315",
+        "valueType": "number"
+      },
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "description": "Title for accessibility"
+      },
+      {
+        "component": "multiselect",
+        "name": "style",
+        "label": "Style",
+        "options": [
+          {
+            "name": "Wide",
+            "value": "wide"
+          },
+          {
+            "name": "Narrow",
+            "value": "narrow"
+          },
+          {
+            "name": "Left Aligned",
+            "value": "left"
+          },
+          {
+            "name": "Right Aligned",
+            "value": "right"
+          }
+        ]
+      }
+    ]
   }
 ]
