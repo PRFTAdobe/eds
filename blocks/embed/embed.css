@@ -79,7 +79,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .embed-block {
     margin: 24px 0;
   }
