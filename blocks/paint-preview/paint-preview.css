@@ -1,0 +1,43 @@
+.bm-room-preview {
+  max-width: 800px;
+  margin: auto;
+  text-align: center;
+}
+
+#room-canvas {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.bm-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+#bm-colors {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.bm-color {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bm-swatch {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: transform .2s;
+}
+
+.bm-swatch:hover {
+  transform: scale(1.1);
+}
