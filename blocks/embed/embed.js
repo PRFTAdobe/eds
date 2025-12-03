@@ -9,34 +9,34 @@ function sanitizeHTML(html) {
   const div = document.createElement('div');
   div.textContent = html;
   const sanitized = div.innerHTML;
-  
+
   // Allow only safe tags and attributes
   const allowedTags = ['iframe', 'div', 'p', 'span', 'a', 'img', 'video', 'audio'];
   const allowedAttrs = ['src', 'href', 'width', 'height', 'title', 'alt', 'class', 'id', 'frameborder', 'allowfullscreen', 'allow'];
-  
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(sanitized, 'text/html');
-  
+
   // Remove script tags and unsafe attributes
   const scripts = doc.querySelectorAll('script');
-  scripts.forEach(script => script.remove());
-  
+  scripts.forEach((script) => script.remove());
+
   const allElements = doc.querySelectorAll('*');
-  allElements.forEach(el => {
+  allElements.forEach((el) => {
     // Remove element if not in allowed tags
     if (!allowedTags.includes(el.tagName.toLowerCase())) {
       el.remove();
       return;
     }
-    
+
     // Remove unsafe attributes
-    [...el.attributes].forEach(attr => {
+    [...el.attributes].forEach((attr) => {
       if (!allowedAttrs.includes(attr.name.toLowerCase())) {
         el.removeAttribute(attr.name);
       }
     });
   });
-  
+
   return doc.body.innerHTML;
 }
 
@@ -46,10 +46,11 @@ function getYouTubeVideoId(url) {
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
     /youtube\.com\/v\/([^&\n?#]+)/,
   ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) return match[1];
+
+  const matchedPattern = patterns.find((pattern) => url.match(pattern));
+  if (matchedPattern) {
+    const match = url.match(matchedPattern);
+    return match[1];
   }
   return null;
 }
@@ -58,7 +59,7 @@ function getYouTubeVideoId(url) {
 function createYouTubeEmbed(videoId, options = {}) {
   const wrapper = document.createElement('div');
   wrapper.className = 'embed-youtube-wrapper';
-  
+
   const iframe = document.createElement('iframe');
   iframe.src = `https://www.youtube.com/embed/${videoId}`;
   iframe.width = options.width || '560';
@@ -67,7 +68,7 @@ function createYouTubeEmbed(videoId, options = {}) {
   iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
   iframe.allowFullscreen = true;
   iframe.title = options.title || 'YouTube video';
-  
+
   wrapper.appendChild(iframe);
   return wrapper;
 }
@@ -76,7 +77,7 @@ function createYouTubeEmbed(videoId, options = {}) {
 function createTwitterEmbed(url) {
   const wrapper = document.createElement('div');
   wrapper.className = 'embed-twitter-wrapper';
-  
+
   // Twitter embed placeholder
   const blockquote = document.createElement('blockquote');
   blockquote.className = 'twitter-tweet';
@@ -85,20 +86,18 @@ function createTwitterEmbed(url) {
   link.textContent = 'Loading tweet...';
   blockquote.appendChild(link);
   wrapper.appendChild(blockquote);
-  
+
   // Load Twitter widget script
   if (!document.querySelector('script[src*="platform.twitter.com"]')) {
     const script = document.createElement('script');
     script.src = 'https://platform.twitter.com/widgets.js';
     script.async = true;
     document.body.appendChild(script);
-  } else {
+  } else if (window.twttr && window.twttr.widgets) {
     // Re-render if script already loaded
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets.load(wrapper);
-    }
+    window.twttr.widgets.load(wrapper);
   }
-  
+
   return wrapper;
 }
 
@@ -106,7 +105,7 @@ function createTwitterEmbed(url) {
 function createInstagramEmbed(url) {
   const wrapper = document.createElement('div');
   wrapper.className = 'embed-instagram-wrapper';
-  
+
   // Instagram embed placeholder
   const blockquote = document.createElement('blockquote');
   blockquote.className = 'instagram-media';
@@ -117,20 +116,18 @@ function createInstagramEmbed(url) {
   link.textContent = 'View this post on Instagram';
   blockquote.appendChild(link);
   wrapper.appendChild(blockquote);
-  
+
   // Load Instagram embed script
   if (!document.querySelector('script[src*="instagram.com/embed.js"]')) {
     const script = document.createElement('script');
     script.src = 'https://www.instagram.com/embed.js';
     script.async = true;
     document.body.appendChild(script);
-  } else {
+  } else if (window.instgrm && window.instgrm.Embeds) {
     // Re-render if script already loaded
-    if (window.instgrm && window.instgrm.Embeds) {
-      window.instgrm.Embeds.process();
-    }
+    window.instgrm.Embeds.process();
   }
-  
+
   return wrapper;
 }
 
@@ -143,17 +140,17 @@ function processUrlEmbed(url) {
       return createYouTubeEmbed(videoId);
     }
   }
-  
+
   // Twitter/X
   if (url.includes('twitter.com') || url.includes('x.com')) {
     return createTwitterEmbed(url);
   }
-  
+
   // Instagram
   if (url.includes('instagram.com')) {
     return createInstagramEmbed(url);
   }
-  
+
   // Generic iframe for other URLs
   const iframe = document.createElement('iframe');
   iframe.src = url;
@@ -168,7 +165,7 @@ function processUrlEmbed(url) {
 function parseBlockContent(block) {
   const rows = [...block.children];
   const config = {};
-  
+
   rows.forEach((row) => {
     const cells = [...row.children];
     if (cells.length >= 2) {
@@ -187,17 +184,17 @@ function parseBlockContent(block) {
       }
     }
   });
-  
+
   return config;
 }
 
 export default function decorate(block) {
   const config = parseBlockContent(block);
-  
+
   // Clear the block
   block.textContent = '';
   block.className = 'embed-block';
-  
+
   // Determine embed type and process
   if (config.type === 'url' || config.url) {
     const url = config.url || config.content;
@@ -226,22 +223,20 @@ export default function decorate(block) {
       const embed = createYouTubeEmbed(videoId, options);
       block.appendChild(embed);
     }
-  } else {
+  } else if (config.content) {
     // Fallback: try to detect content type
-    if (config.content) {
-      if (config.content.startsWith('http')) {
-        const embed = processUrlEmbed(config.content);
-        block.appendChild(embed);
-      } else if (config.content.includes('<')) {
-        const sanitized = sanitizeHTML(config.content);
-        const wrapper = document.createElement('div');
-        wrapper.className = 'embed-html-wrapper';
-        wrapper.innerHTML = sanitized;
-        block.appendChild(wrapper);
-      }
+    if (config.content.startsWith('http')) {
+      const embed = processUrlEmbed(config.content);
+      block.appendChild(embed);
+    } else if (config.content.includes('<')) {
+      const sanitized = sanitizeHTML(config.content);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'embed-html-wrapper';
+      wrapper.innerHTML = sanitized;
+      block.appendChild(wrapper);
     }
   }
-  
+
   // Add error message if no content
   if (!block.firstChild) {
     const error = document.createElement('p');
