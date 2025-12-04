@@ -1,4 +1,4 @@
-import { fetchData } from '../../scripts/byom.js';
+import fetchData from '../../scripts/byom.js';
 
 export default async function decorate(block) {
   const baseSrc = block.dataset.baseImage;
@@ -89,19 +89,19 @@ export default async function decorate(block) {
       const item=document.createElement("div");
       item.className="bm-color";
       const swatch=document.createElement("div");
-      swatch.className="bm-swatch";
-      swatch.style.background=`#${c.hex}`;
-      swatch.addEventListener("click",()=>recolorWall(c.hex));
+      swatch.className = 'bm-swatch';
+      swatch.style.background = `#${c.hex}`;
+      swatch.addEventListener('click', () => recolorWall(c.hex));
       item.appendChild(swatch);
-      const label=document.createElement("span");
-      label.textContent=c.name;
+      const label = document.createElement('span');
+      label.textContent = c.name;
       item.appendChild(label);
       colorList.appendChild(item);
     });
   }
 
-  prev.addEventListener("click",()=>{ if(page>1) page--; render(); });
-  next.addEventListener("click",()=>{ if((page*PAGE_SIZE)<colors.length) page++; render(); });
+  prev.addEventListener('click', () => { if (page > 1) page -= 1; render(); });
+  next.addEventListener('click', () => { if ((page * PAGE_SIZE) < colors.length) page += 1; render(); });
 
   render();
 }
