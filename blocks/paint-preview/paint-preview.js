@@ -1,4 +1,4 @@
-import { fetchData } from '/scripts/byom.js';
+import { fetchData } from '../../scripts/byom.js';
 
 export default async function decorate(block) {
   const baseSrc = block.dataset.baseImage;
