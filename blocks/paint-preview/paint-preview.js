@@ -5,7 +5,6 @@ export default async function decorate(block) {
   const maskSrc = block.dataset.maskImage;
 
   if (!baseSrc || !maskSrc) {
-    console.warn("Base or mask image not set");
     return;
   }
 
