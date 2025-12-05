@@ -158,7 +158,7 @@
           }
         },
         {
-          "title": "Embed",
+          "title": "Embeds",
           "id": "embed",
           "plugins": {
             "xwalk": {
