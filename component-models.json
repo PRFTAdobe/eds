@@ -334,7 +334,7 @@
     ]
   },
   {
-    "id": "paint-preview",
+    "id": "paintpreview",
     "fields": [
       {
         "component": "reference",
