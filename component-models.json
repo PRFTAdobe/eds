@@ -349,7 +349,7 @@
         "name": "maskImage",
         "label": "Paint Preview Mask Image",
         "multi": false
-      },
+      }
     ]
    }   
 ]
