@@ -28,7 +28,7 @@ export default async function decorate(block) {
   }
 
   // Pull color data from BYOM
-  const json = await fetchData('/byom/colors.json');
+  const json = await fetchData('devopsdrops.tech/colorapi/colors.json');
   const colors = json.data;
 
   const PAGE_SIZE = 30;
