@@ -1,13 +1,33 @@
 import fetchData from '../../scripts/byom.js';
 
 export default async function decorate(block) {
-  const baseSrc = block.dataset.baseImage;
-  const maskSrc = block.dataset.maskImage;
+  // Build the HTML structure dynamically
+  block.innerHTML = `
+    <div class="bm-room-preview"
+         data-base-image="${block.dataset.baseImage || ''}"
+         data-mask-image="${block.dataset.maskImage || ''}">
+      <canvas id="room-canvas"></canvas>
+
+      <div class="bm-controls">
+        <button id="bm-prev">Prev</button>
+        <span id="bm-page"></span>
+        <button id="bm-next">Next</button>
+      </div>
+
+      <div id="bm-colors"></div>
+    </div>
+  `;
+
+  const wrapper = block.querySelector('.bm-room-preview');
+  const baseSrc = wrapper.dataset.baseImage;
+  const maskSrc = wrapper.dataset.maskImage;
 
   if (!baseSrc || !maskSrc) {
+    console.warn('Paint Room Preview requires authorable baseImage and maskImage.');
     return;
   }
 
+  // Pull color data from BYOM
   const json = await fetchData('/byom/colors.json');
   const colors = json.data;
 
@@ -32,7 +52,6 @@ export default async function decorate(block) {
 
   canvas.width = imgBase.width;
   canvas.height = imgBase.height;
-
   ctx.drawImage(imgBase, 0, 0);
 
   function hexToRgb(hex) {
@@ -53,7 +72,9 @@ export default async function decorate(block) {
     return tctx.getImageData(0, 0, temp.width, temp.height).data;
   }
 
-  function blend(base, target, amt) { return base * (1 - amt) + target * amt; }
+  function blend(base, target, amt) {
+    return base * (1 - amt) + target * amt;
+  }
 
   function recolorWall(hex) {
     const target = hexToRgb(hex);
@@ -61,6 +82,7 @@ export default async function decorate(block) {
     const h = canvas.height;
 
     ctx.drawImage(imgBase, 0, 0);
+
     const baseData = ctx.getImageData(0, 0, w, h);
     const maskData = getMaskData();
 
@@ -72,6 +94,7 @@ export default async function decorate(block) {
         baseData.data[i + 2] = blend(baseData.data[i + 2], target.b, m);
       }
     }
+
     ctx.putImageData(baseData, 0, 0);
   }
 
@@ -83,24 +106,42 @@ export default async function decorate(block) {
   function render() {
     colorList.innerHTML = '';
     pageLabel.textContent = `Page ${page}`;
-    const slice = colors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).slice(0, VISIBLE);
+
+    const slice = colors
+      .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+      .slice(0, VISIBLE);
+
     slice.forEach((c) => {
       const item = document.createElement('div');
       item.className = 'bm-color';
+
       const swatch = document.createElement('div');
       swatch.className = 'bm-swatch';
       swatch.style.background = `#${c.hex}`;
       swatch.addEventListener('click', () => recolorWall(c.hex));
-      item.appendChild(swatch);
+
       const label = document.createElement('span');
       label.textContent = c.name;
+
+      item.appendChild(swatch);
       item.appendChild(label);
       colorList.appendChild(item);
     });
   }
 
-  prev.addEventListener('click', () => { if (page > 1) page -= 1; render(); });
-  next.addEventListener('click', () => { if ((page * PAGE_SIZE) < colors.length) page += 1; render(); });
+  prev.addEventListener('click', () => {
+    if (page > 1) {
+      page -= 1;
+      render();
+    }
+  });
+
+  next.addEventListener('click', () => {
+    if ((page * PAGE_SIZE) < colors.length) {
+      page += 1;
+      render();
+    }
+  });
 
   render();
 }
