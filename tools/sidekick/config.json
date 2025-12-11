@@ -1,11 +1,5 @@
 {
   "project": "EDS",
   "editUrlLabel": "AEM Editor",
-  "editUrlPattern": "{{contentSourceUrl}}{{pathname}}?cmd=open",
-  "plugins":[],
-  "permissions": {
-    "external": [
-      "https://devopsdrops.tech"
-    ]
-  }
+  "editUrlPattern": "{{contentSourceUrl}}{{pathname}}?cmd=open"
 }
