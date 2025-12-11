@@ -332,26 +332,5 @@
         ]
       }
     ]
-  },
-  {
-    "id": "paintpreview",
-    "fields": [
-      {
-        "component": "reference",
-        "valueType": "url",
-        "name": "baseImage",
-        "label": "Paint Preview Base Image",
-        "description": "The base image to recolor.",
-        "multi": false
-      },
-      {
-        "component": "reference",
-        "valueType": "url",
-        "name": "maskImage",
-        "label": "Paint Preview Mask Image",
-        "description": "Black/white mask defining which areas to recolor.",
-        "multi": false
-      },
-    ]
-  }  
+  } 
 ]
