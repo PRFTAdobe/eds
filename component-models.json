@@ -352,11 +352,6 @@
         "description": "Black/white mask defining which areas to recolor.",
         "multi": false
       }
-    ],
-    "permissions": {
-      "external": [
-        "https://devopsdrops.tech"
-      ]
-    }
+    ]
    }   
 ]
