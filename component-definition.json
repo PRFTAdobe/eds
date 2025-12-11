@@ -173,15 +173,15 @@
           }
         },
         {
-          "title": "PaintPreview",
-          "id": "paintpreview",
+          "title": "Paint Room Preview",
+          "id": "paint-room-preview",
           "plugins": {
             "xwalk": {
               "page": {
                 "resourceType": "core/franklin/components/block/v1/block",
                 "template": {
-                  "name": "PaintPreview",
-                  "model": "paintpreview"
+                  "name": "Paint Room Preview",
+                  "model": "paint-room-preview"
                 }
               }
             }

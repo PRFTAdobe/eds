@@ -334,7 +334,7 @@
     ]
   },
   {
-    "id": "paintpreview",
+    "id": "paint-room-preview",
     "fields": [
       {
         "component": "reference",
