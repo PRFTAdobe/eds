@@ -337,7 +337,7 @@
     "id": "paint-room-preview",
     "fields": [
       {
-        "component": "reference",
+        "component": "text",
         "valueType": "url",
         "name": "baseImage",
         "label": "Paint Preview Base Image",
@@ -345,7 +345,7 @@
         "multi": false
       },
       {
-        "component": "reference",
+        "component": "text",
         "valueType": "url",
         "name": "maskImage",
         "label": "Paint Preview Mask Image",
