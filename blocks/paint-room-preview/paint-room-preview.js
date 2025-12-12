@@ -8,8 +8,8 @@ export default async function decorate(block) {
   // Build the HTML structure dynamically
   block.innerHTML = `
     <div class="paint-room-preview"
-         data-base-image="${block.dataset.baseImage || ''}"
-         data-mask-image="${block.dataset.maskImage || ''}">
+         data-base-image="${baseSrc || ''}"
+         data-mask-image="${maskSrc || ''}">
       <canvas id="room-canvas"></canvas>
 
       <div class="bm-controls">
