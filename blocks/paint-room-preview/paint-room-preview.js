@@ -1,6 +1,10 @@
 import fetchData from '../../scripts/byom.js';
 
 export default async function decorate(block) {
+
+  const baseSrc = block.dataset.baseImage;
+  const maskSrc = block.dataset.maskImage;
+  
   // Build the HTML structure dynamically
   block.innerHTML = `
     <div class="paint-room-preview"
@@ -17,11 +21,6 @@ export default async function decorate(block) {
       <div id="bm-colors"></div>
     </div>
   `;
-
-  const wrapper = block.querySelector('.paint-room-preview');
-  const baseSrc = wrapper.dataset.baseImage;
-  const maskSrc = wrapper.dataset.maskImage;
-
   
   if (!baseSrc || !maskSrc) {
     console.warn('Paint Room Preview requires authorable baseImage and maskImage.');
