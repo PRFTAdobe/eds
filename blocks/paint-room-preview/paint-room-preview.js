@@ -3,7 +3,7 @@ import fetchData from '../../scripts/byom.js';
 export default async function decorate(block) {
   // Build the HTML structure dynamically
   block.innerHTML = `
-    <div class="bm-room-preview"
+    <div class="paint-room-preview"
          data-base-image="${block.dataset.baseImage || ''}"
          data-mask-image="${block.dataset.maskImage || ''}">
       <canvas id="room-canvas"></canvas>
@@ -18,7 +18,7 @@ export default async function decorate(block) {
     </div>
   `;
 
-  const wrapper = block.querySelector('.bm-room-preview');
+  const wrapper = block.querySelector('.paint-room-preview');
   const baseSrc = wrapper.dataset.baseImage;
   const maskSrc = wrapper.dataset.maskImage;
 
