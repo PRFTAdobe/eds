@@ -127,9 +127,7 @@ export default async function decorate(block) {
       item.appendChild(label);
       colorList.appendChild(item);
     });
-
-
-console.log('baseImage and maskImage:', baseSrc, maskSrc, colors);
+    
   }
 
   prev.addEventListener('click', () => {
