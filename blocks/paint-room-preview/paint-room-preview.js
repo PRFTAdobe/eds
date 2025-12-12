@@ -1,96 +1,116 @@
 export default async function decorate(block) {
- const wrapper = block.querySelector('.paint-room-preview');
- if (!wrapper) return;
+  const root = block.querySelector('.paint-room-preview');
+  if (!root) return;
 
- const canvas = wrapper.querySelector('#room-canvas');
- const ctx = canvas.getContext('2d');
+  const baseImage = root.dataset.baseImage;
+  const maskImage = root.dataset.maskImage;
 
- const colorsContainer = wrapper.querySelector('#bm-colors');
- const prevBtn = wrapper.querySelector('#bm-prev');
- const nextBtn = wrapper.querySelector('#bm-next');
- const pageLabel = wrapper.querySelector('#bm-page');
+  const canvas = root.querySelector('#room-canvas');
+  const ctx = canvas.getContext('2d');
 
- const baseImgSrc = wrapper.dataset.baseImage;
- const maskImgSrc = wrapper.dataset.maskImage;
+  const colorsContainer = root.querySelector('#bm-colors');
+  const prevBtn = root.querySelector('#bm-prev');
+  const nextBtn = root.querySelector('#bm-next');
+  const pageLabel = root.querySelector('#bm-page');
 
- if (!baseImgSrc || !maskImgSrc) {
-  console.warn('Missing base or mask image.');
-  return;
- }
+  let page = 1;
+  const pageSize = 30;
 
- const baseImg = new Image();
- const maskImg = new Image();
- baseImg.crossOrigin = 'anonymous';
- maskImg.crossOrigin = 'anonymous';
+  async function loadColors() {
+    const url = `https://devopsdrops.tech/colorapi/colors.json?page=${page}&pageSize=${pageSize}`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' }});
 
- await new Promise((resolve) => {
-  let loaded = 0;
-  const check = () => { if (++loaded === 2) resolve(); };
-  baseImg.onload = check;
-  maskImg.onload = check;
+    if (!res.ok) {
+      console.error('Color API failed:', res.status);
+      return { data: [] };
+    }
 
-  baseImg.src = baseImgSrc;
-  maskImg.src = maskImgSrc;
- });
-
- canvas.width = baseImg.width;
- canvas.height = baseImg.height;
-
- function repaint(hex) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(baseImg, 0, 0);
-  ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = `#${hex}`;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'destination-in';
-  ctx.drawImage(maskImg, 0, 0);
-  ctx.globalCompositeOperation = 'source-over';
- }
-
- // Fetch Color API
- let currentPage = 1;
- const pageSize = 30;
-
- async function loadColors(page) {
-  const url = `https://devopsdrops.tech/colorapi/colors.json?page=${page}&pageSize=${pageSize}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-   console.error('Color API error');
-   return;
+    return await res.json();
   }
 
-  const json = await res.json();
-  renderColors(json.data);
-  pageLabel.textContent = `Page ${json.page} of ${json.totalPages}`;
- }
+  async function renderColors() {
+    const json = await loadColors();
+    colorsContainer.innerHTML = '';
 
- function renderColors(list) {
-  colorsContainer.innerHTML = '';
-  list.forEach(c => {
-   const swatch = document.createElement('button');
-   swatch.textContent = c.name;
-   swatch.style.background = `#${c.hex}`;
-   swatch.style.color = '#000';
-   swatch.style.margin = '4px';
-   swatch.style.padding = '8px';
-   swatch.addEventListener('click', () => repaint(c.hex));
-   colorsContainer.appendChild(swatch);
+    (json.data || []).forEach(({ name, hex }) => {
+      const swatch = document.createElement('div');
+      swatch.className = 'bm-swatch';
+      swatch.style.width = '30px';
+      swatch.style.height = '30px';
+      swatch.style.cursor = 'pointer';
+      swatch.style.border = '1px solid #ccc';
+      swatch.style.background = `#${hex}`;
+      swatch.title = name;
+
+      swatch.addEventListener('click', () => applyPaint(`#${hex}`));
+      colorsContainer.appendChild(swatch);
+    });
+
+    pageLabel.textContent = `Page ${page}`;
+  }
+
+  async function drawBaseAndMask() {
+    const base = new Image();
+    const mask = new Image();
+
+    base.crossOrigin = 'anonymous';
+    mask.crossOrigin = 'anonymous';
+
+    base.src = baseImage;
+    mask.src = maskImage;
+
+    await Promise.all([
+      base.decode().catch(() => {}),
+      mask.decode().catch(() => {}),
+    ]);
+
+    canvas.width = base.width;
+    canvas.height = base.height;
+
+    ctx.drawImage(base, 0, 0);
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.drawImage(mask, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function applyPaint(color) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const base = new Image();
+    const mask = new Image();
+
+    base.src = baseImage;
+    mask.src = maskImage;
+
+    Promise.all([
+      base.decode().catch(() => {}),
+      mask.decode().catch(() => {}),
+    ]).then(() => {
+      ctx.drawImage(base, 0, 0);
+
+      ctx.globalCompositeOperation = 'source-atop';
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.drawImage(mask, 0, 0);
+
+      ctx.globalCompositeOperation = 'source-over';
+    });
+  }
+
+  prevBtn.addEventListener('click', () => {
+    if (page > 1) {
+      page--;
+      renderColors();
+    }
   });
- }
 
- prevBtn.addEventListener('click', () => {
-  if (currentPage > 1) {
-   currentPage--;
-   loadColors(currentPage);
-  }
- });
+  nextBtn.addEventListener('click', () => {
+    page++;
+    renderColors();
+  });
 
- nextBtn.addEventListener('click', () => {
-  currentPage++;
-  loadColors(currentPage);
- });
-
- // Initial load
- repaint('FFFFFF');
- loadColors(currentPage);
+  await drawBaseAndMask();
+  await renderColors();
 }
