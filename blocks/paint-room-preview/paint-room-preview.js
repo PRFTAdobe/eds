@@ -24,7 +24,7 @@ export default async function decorate(block) {
   
   if (!baseSrc || !maskSrc) {
     console.warn('Paint Room Preview requires authorable baseImage and maskImage.');
-    return;
+   // return;
   }
 
   // Pull color data from BYOM
