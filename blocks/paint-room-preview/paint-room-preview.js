@@ -2,10 +2,8 @@ import fetchData from '../../scripts/byom.js';
 
 export default async function decorate(block) {
 
-  const baseSrc = 'https://author-p7752-e729659.adobeaemcloud.com/content/dam/byom-demo/coffee-shop.png'
-  //block.dataset.baseImage;
-  const maskSrc = 'https://author-p7752-e729659.adobeaemcloud.com/content/dam/byom-demo/coffee-shop-mask.png'
-  //block.dataset.maskImage;
+  const baseSrc = block.dataset.baseImage;
+  const maskSrc = block.dataset.maskImage;
   
   // Build the HTML structure dynamically
   block.innerHTML = `
