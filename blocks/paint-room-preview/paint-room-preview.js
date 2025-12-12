@@ -1,148 +1,116 @@
-import fetchData from '../../scripts/byom.js';
-
 export default async function decorate(block) {
+  const root = block.querySelector('.paint-room-preview');
+  if (!root) return;
 
-  const baseSrc = block.dataset.baseImage;
-  const maskSrc = block.dataset.maskImage;
-  
-  // Build the HTML structure dynamically
-  block.innerHTML = `
-    <div class="paint-room-preview"
-         data-base-image="${baseSrc || ''}"
-         data-mask-image="${maskSrc || ''}">
-      <canvas id="room-canvas"></canvas>
+  // Read attributes directly from markup
+  const baseImage = root.getAttribute('data-base-image');
+  const maskImage = root.getAttribute('data-mask-image');
 
-      <div class="bm-controls">
-        <button id="bm-prev">Prev</button>
-        <span id="bm-page"></span>
-        <button id="bm-next">Next</button>
-      </div>
+  // Ensure they are present
+  if (!baseImage || !maskImage) {
+    console.warn('Missing base or mask image attributes.');
+  }
 
-      <div id="bm-colors"></div>
-    </div>
-  `;
-  
-  if (!baseSrc || !maskSrc) {
-    console.warn('Paint Room Preview requires authorable baseImage and maskImage.');
-   // return;
-  }
+  // Worker API URL
+  const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json?page=1&pageSize=30';
 
-  // Pull color data from BYOM
-  const json = await fetchData('https://devopsdrops.tech/colorapi/colors.json');
-  const colors = json.data;
+  // Fetch colors
+  let colors = [];
+  try {
+    const res = await fetch(COLORS_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    colors = json.data || [];
+  } catch (e) {
+    console.error('Color load failed:', e);
+  }
 
-  const PAGE_SIZE = 30;
-  const VISIBLE = 5;
-  let page = 1;
+  // Inject color swatches
+  const colorsContainer = root.querySelector('#bm-colors');
+  colorsContainer.innerHTML = '';
 
-  const canvas = block.querySelector('#room-canvas');
-  const ctx = canvas.getContext('2d');
+  colors.forEach((c) => {
+    const swatch = document.createElement('button');
+    swatch.className = 'bm-color';
+    swatch.style.background = `#${c.hex}`;
+    swatch.title = c.name;
+    swatch.dataset.hex = c.hex;
+    colorsContainer.appendChild(swatch);
+  });
 
-  function loadImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      img.src = src;
-    });
-  }
+  // Canvas painter
+  const canvas = root.querySelector('#room-canvas');
+  const ctx = canvas.getContext('2d');
 
-  const imgBase = await loadImage(baseSrc);
-  const imgMask = await loadImage(maskSrc);
+  const base = new Image();
+  const mask = new Image();
 
-  canvas.width = imgBase.width;
-  canvas.height = imgBase.height;
-  ctx.drawImage(imgBase, 0, 0);
+  const loadImage = (img, src) => new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = src;
+  });
 
-  function hexToRgb(hex) {
-    const h = hex.replace('#', '');
-    return {
-      r: parseInt(h.substring(0, 2), 16),
-      g: parseInt(h.substring(2, 4), 16),
-      b: parseInt(h.substring(4, 6), 16),
-    };
-  }
+  try {
+    await loadImage(base, baseImage);
+    await loadImage(mask, maskImage);
+  } catch (e) {
+    console.error('Image load error:', e);
+    return;
+  }
 
-  function getMaskData() {
-    const temp = document.createElement('canvas');
-    temp.width = canvas.width;
-    temp.height = canvas.height;
-    const tctx = temp.getContext('2d');
-    tctx.drawImage(imgMask, 0, 0);
-    return tctx.getImageData(0, 0, temp.width, temp.height).data;
-  }
+  // Set canvas size to match base image
+  canvas.width = base.width;
+  canvas.height = base.height;
 
-  function blend(base, target, amt) {
-    return base * (1 - amt) + target * amt;
-  }
+  const render = (hex) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(base, 0, 0);
 
-  function recolorWall(hex) {
-    const target = hexToRgb(hex);
-    const w = canvas.width;
-    const h = canvas.height;
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.drawImage(imgBase, 0, 0);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(mask, 0, 0);
 
-    const baseData = ctx.getImageData(0, 0, w, h);
-    const maskData = getMaskData();
+    ctx.globalCompositeOperation = 'source-over';
+  };
 
-    for (let i = 0; i < baseData.data.length; i += 4) {
-      const m = maskData[i] / 255;
-      if (m > 0.05) {
-        baseData.data[i] = blend(baseData.data[i], target.r, m);
-        baseData.data[i + 1] = blend(baseData.data[i + 1], target.g, m);
-        baseData.data[i + 2] = blend(baseData.data[i + 2], target.b, m);
-      }
-    }
+  // Default first color
+  if (colors.length > 0) {
+    render(`#${colors[0].hex}`);
+  }
 
-    ctx.putImageData(baseData, 0, 0);
-  }
+  // On color click
+  colorsContainer.addEventListener('click', (e) => {
+    const btn = e.target.closest('.bm-color');
+    if (!btn) return;
+    const hex = btn.dataset.hex;
+    render(`#${hex}`);
+  });
 
-  const prev = block.querySelector('#bm-prev');
-  const next = block.querySelector('#bm-next');
-  const colorList = block.querySelector('#bm-colors');
-  const pageLabel = block.querySelector('#bm-page');
+  // Pagination controls (local only)
+  let page = 1;
+  const pageEl = root.querySelector('#bm-page');
+  const prev = root.querySelector('#bm-prev');
+  const next = root.querySelector('#bm-next');
 
-  function render() {
-    colorList.innerHTML = '';
-    pageLabel.textContent = `Page ${page}`;
+  const updatePageUI = () => {
+    pageEl.textContent = `Page ${page}`;
+  };
+  updatePageUI();
 
-    const slice = colors
-      .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-      .slice(0, VISIBLE);
+  prev.addEventListener('click', () => {
+    if (page > 1) {
+      page--;
+      updatePageUI();
+    }
+  });
 
-    slice.forEach((c) => {
-      const item = document.createElement('div');
-      item.className = 'bm-color';
-
-      const swatch = document.createElement('div');
-      swatch.className = 'bm-swatch';
-      swatch.style.background = `#${c.hex}`;
-      swatch.addEventListener('click', () => recolorWall(c.hex));
-
-      const label = document.createElement('span');
-      label.textContent = c.name;
-
-      item.appendChild(swatch);
-      item.appendChild(label);
-      colorList.appendChild(item);
-    });
-    
-  }
-
-  prev.addEventListener('click', () => {
-    if (page > 1) {
-      page -= 1;
-      render();
-    }
-  });
-
-  next.addEventListener('click', () => {
-    if ((page * PAGE_SIZE) < colors.length) {
-      page += 1;
-      render();
-    }
-  });
-
-  render();
+  next.addEventListener('click', () => {
+    if (page < 1) return; // only 1 page for now
+    page++;
+    updatePageUI();
+  });
 }
