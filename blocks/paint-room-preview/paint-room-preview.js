@@ -22,6 +22,8 @@ export default async function decorate(block) {
   const baseSrc = wrapper.dataset.baseImage;
   const maskSrc = wrapper.dataset.maskImage;
 
+console.log('Base Image:', block.dataset.baseImage);
+
   if (!baseSrc || !maskSrc) {
     console.warn('Paint Room Preview requires authorable baseImage and maskImage.');
     return;
