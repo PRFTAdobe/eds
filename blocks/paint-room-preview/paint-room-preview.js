@@ -1,116 +1,116 @@
-export default async function decorate(block) {
-  const root = block.querySelector('.paint-room-preview');
-  if (!root) return;
+document.addEventListener('DOMContentLoaded', async () => {
+ const block = document.querySelector('.paint-room-preview');
+ if (!block) return;
 
-  // Read attributes directly from markup
-  const baseImage = root.getAttribute('data-base-image');
-  const maskImage = root.getAttribute('data-mask-image');
+ const baseImageUrl = block.dataset.baseImage;
+ const maskImageUrl = block.dataset.maskImage;
 
-  // Ensure they are present
-  if (!baseImage || !maskImage) {
-    console.warn('Missing base or mask image attributes.');
-  }
+ const canvas = document.getElementById('room-canvas');
+ const ctx = canvas.getContext('2d');
 
-  // Worker API URL
-  const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json?page=1&pageSize=30';
+ const prevBtn = document.getElementById('bm-prev');
+ const nextBtn = document.getElementById('bm-next');
+ const pageLabel = document.getElementById('bm-page');
+ const colorsContainer = document.getElementById('bm-colors');
 
-  // Fetch colors
-  let colors = [];
-  try {
-    const res = await fetch(COLORS_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    colors = json.data || [];
-  } catch (e) {
-    console.error('Color load failed:', e);
-  }
+ let page = 1;
+ const pageSize = 30;
+ let totalPages = 1;
+ let colors = [];
 
-  // Inject color swatches
-  const colorsContainer = root.querySelector('#bm-colors');
-  colorsContainer.innerHTML = '';
+ async function fetchColors() {
+  const url = `https://devopsdrops.tech/colorapi/colors.json?page=${page}&pageSize=${pageSize}`;
+  const res = await fetch(url);
+  const json = await res.json();
 
-  colors.forEach((c) => {
-    const swatch = document.createElement('button');
-    swatch.className = 'bm-color';
-    swatch.style.background = `#${c.hex}`;
-    swatch.title = c.name;
-    swatch.dataset.hex = c.hex;
-    colorsContainer.appendChild(swatch);
-  });
+  colors = json.data || [];
+  totalPages = json.totalPages || 1;
+  pageLabel.textContent = `Page ${page} of ${totalPages}`;
 
-  // Canvas painter
-  const canvas = root.querySelector('#room-canvas');
-  const ctx = canvas.getContext('2d');
+  renderColors();
+ }
 
-  const base = new Image();
-  const mask = new Image();
+ function renderColors() {
+  colorsContainer.innerHTML = '';
 
-  const loadImage = (img, src) => new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-    img.src = src;
-  });
+  colors.forEach((color) => {
+   const swatch = document.createElement('div');
+   swatch.style.width = '32px';
+   swatch.style.height = '32px';
+   swatch.style.borderRadius = '50%';
+   swatch.style.cursor = 'pointer';
+   swatch.style.border = '1px solid #ddd';
+   swatch.style.display = 'inline-block';
+   swatch.style.margin = '4px';
+   swatch.style.backgroundColor = `#${color.hex}`;
 
-  try {
-    await loadImage(base, baseImage);
-    await loadImage(mask, maskImage);
-  } catch (e) {
-    console.error('Image load error:', e);
-    return;
-  }
+   swatch.addEventListener('click', () => applyColor(`#${color.hex}`));
 
-  // Set canvas size to match base image
-  canvas.width = base.width;
-  canvas.height = base.height;
+   colorsContainer.appendChild(swatch);
+  });
+ }
 
-  const render = (hex) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(base, 0, 0);
+ async function loadImage(url) {
+  return new Promise((resolve) => {
+   const img = new Image();
+   img.crossOrigin = 'anonymous';
+   img.onload = () => resolve(img);
+   img.src = url;
+  });
+ }
 
-    ctx.globalCompositeOperation = 'source-atop';
-    ctx.fillStyle = hex;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+ async function initCanvas() {
+  if (!baseImageUrl || !maskImageUrl) return;
 
-    ctx.globalCompositeOperation = 'destination-in';
-    ctx.drawImage(mask, 0, 0);
+  const baseImg = await loadImage(baseImageUrl);
+  const maskImg = await loadImage(maskImageUrl);
 
-    ctx.globalCompositeOperation = 'source-over';
-  };
+  canvas.width = baseImg.width;
+  canvas.height = baseImg.height;
 
-  // Default first color
-  if (colors.length > 0) {
-    render(`#${colors[0].hex}`);
-  }
+  ctx.drawImage(baseImg, 0, 0);
 
-  // On color click
-  colorsContainer.addEventListener('click', (e) => {
-    const btn = e.target.closest('.bm-color');
-    if (!btn) return;
-    const hex = btn.dataset.hex;
-    render(`#${hex}`);
-  });
+  canvas.dataset.mask = maskImg.src;
+  canvas.dataset.base = baseImg.src;
+ }
 
-  // Pagination controls (local only)
-  let page = 1;
-  const pageEl = root.querySelector('#bm-page');
-  const prev = root.querySelector('#bm-prev');
-  const next = root.querySelector('#bm-next');
+ async function applyColor(color) {
+  const baseImg = await loadImage(canvas.dataset.base);
+  const maskImg = await loadImage(canvas.dataset.mask);
 
-  const updatePageUI = () => {
-    pageEl.textContent = `Page ${page}`;
-  };
-  updatePageUI();
+  canvas.width = baseImg.width;
+  canvas.height = baseImg.height;
 
-  prev.addEventListener('click', () => {
-    if (page > 1) {
-      page--;
-      updatePageUI();
-    }
-  });
+  ctx.drawImage(baseImg, 0, 0);
 
-  next.addEventListener('click', () => {
-    if (page < 1) return; // only 1 page for now
-    page++;
-    updatePageUI();
-  });
-}
+  const temp = document.createElement('canvas');
+  temp.width = maskImg.width;
+  temp.height = maskImg.height;
+  const tctx = temp.getContext('2d');
+
+  tctx.drawImage(maskImg, 0, 0);
+
+  tctx.globalCompositeOperation = 'source-in';
+  tctx.fillStyle = color;
+  tctx.fillRect(0, 0, temp.width, temp.height);
+
+  ctx.drawImage(temp, 0, 0);
+ }
+
+ prevBtn.addEventListener('click', () => {
+  if (page > 1) {
+   page -= 1;
+   fetchColors();
+  }
+ });
+
+ nextBtn.addEventListener('click', () => {
+  if (page < totalPages) {
+   page += 1;
+   fetchColors();
+  }
+ });
+
+ await initCanvas();
+ await fetchColors();
+});
