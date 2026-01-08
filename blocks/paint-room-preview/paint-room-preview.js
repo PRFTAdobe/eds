@@ -40,7 +40,6 @@ export default async function decorate(block) {
 
   const root = ensureMarkup();
 
-  /* ---- FIXED: accept dataset or authored <img data-aue-prop="baseImage"> ---- */
   function findImageFromMarkup(prop) {
     const img = block.querySelector(`img[data-aue-prop="${prop}"]`);
     return img ? img.getAttribute('src') : '';
@@ -108,6 +107,13 @@ export default async function decorate(block) {
       loadImage(baseImage),
       loadImage(maskImage),
     ]);
+
+    // hide authored images once we loaded them in the block
+    block.querySelectorAll('img[data-aue-prop="baseImage"], img[data-aue-prop="maskImage"]').forEach(img => {
+      const wrapper = img.closest('picture, div') || img;
+      wrapper.style.display = 'none';
+    });
+
   } catch (e) {
     console.error('Failed to load base or mask image:', e);
     root.innerHTML = `<div style="color:#b00">Error loading images for Paint Preview. Check image URLs and CORS.</div>`;
