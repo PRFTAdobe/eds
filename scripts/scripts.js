@@ -10,6 +10,7 @@ import {
   loadSection,
   loadSections,
   loadCSS,
+  fetchFromApi,
 } from './aem.js';
 
 /**

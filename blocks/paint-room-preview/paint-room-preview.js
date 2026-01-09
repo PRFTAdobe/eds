@@ -1,5 +1,3 @@
-import { fetchAPI } from '/scripts/utils/fetch-api.js';
-
 export default async function decorate(block) {
 
   const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json';
@@ -160,7 +158,7 @@ export default async function decorate(block) {
 
   async function loadApiPage(p = 1) {
     try {
-      const json = await fetchAPI(COLORS_URL, {
+      const json = await fetchFromApi(COLORS_URL, {
         page: p,
         pageSize: PAGE_SIZE,
       });
