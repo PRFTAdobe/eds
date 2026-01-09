@@ -1,4 +1,4 @@
-import { fetchColors } from '/scripts/fetchApi.js';
+import { fetchColors } from '/scripts/fetch-api.js';
 
 export default async function decorate(block) {
   const PAGE_SIZE = 30;
