@@ -185,11 +185,6 @@
                 }
               }
             }
-          },
-          "permissions": {
-            "external": [
-              "https://devopsdrops.tech"
-            ]
           }
         }
       ]
