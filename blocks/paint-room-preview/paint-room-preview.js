@@ -1,4 +1,4 @@
-import { fetchAPI } from '/utils/fetchApi.js';
+import { fetchAPI } from '/scripts/fetchApi.js';
 
 export default async function decorate(block) {
 
