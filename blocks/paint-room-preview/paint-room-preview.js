@@ -1,3 +1,5 @@
+import { fetchAPI } from '/utils/fetchApi.js';
+
 export default async function decorate(block) {
 
   const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json';
@@ -46,14 +48,14 @@ export default async function decorate(block) {
   }
 
   const baseImage =
-    (block.dataset.baseImage && block.dataset.baseImage.trim()) ||
-    (root.dataset.baseImage && root.dataset.baseImage.trim()) ||
+    (block.dataset.baseImage?.trim()) ||
+    (root.dataset.baseImage?.trim()) ||
     findImageFromMarkup('baseImage') ||
     '';
 
   const maskImage =
-    (block.dataset.maskImage && block.dataset.maskImage.trim()) ||
-    (root.dataset.maskImage && root.dataset.maskImage.trim()) ||
+    (block.dataset.maskImage?.trim()) ||
+    (root.dataset.maskImage?.trim()) ||
     findImageFromMarkup('maskImage') ||
     '';
 
@@ -69,11 +71,8 @@ export default async function decorate(block) {
   }
 
   const canvas = root.querySelector('#room-canvas');
-  const ctx = canvas.getContext && canvas.getContext('2d');
-  if (!ctx) {
-    console.error('Canvas 2D not supported.');
-    return;
-  }
+  const ctx = canvas.getContext?.('2d');
+  if (!ctx) return console.error('Canvas 2D not supported.');
 
   const prevBtn = root.querySelector('#bm-prev');
   const nextBtn = root.querySelector('#bm-next');
@@ -108,7 +107,6 @@ export default async function decorate(block) {
       loadImage(maskImage),
     ]);
 
-    // hide authored images once we loaded them in the block
     block.querySelectorAll('img[data-aue-prop="baseImage"], img[data-aue-prop="maskImage"]').forEach(img => {
       const wrapper = img.closest('picture, div') || img;
       wrapper.style.display = 'none';
@@ -142,6 +140,7 @@ export default async function decorate(block) {
       b: parseInt(h.substring(4, 6), 16),
     };
   }
+
   function blend(base, target, amt) {
     return Math.round(base * (1 - amt) + target * amt);
   }
@@ -165,36 +164,40 @@ export default async function decorate(block) {
     ctx.putImageData(imgData, 0, 0);
   }
 
-  let page = 1;
+  let apiPage = 1;
+  let pageIndex = 0;
   let colors = [];
 
-  async function loadColors(p = 1) {
+  async function loadApiPage(p = 1) {
     try {
-      const url = `${COLORS_URL}?page=${p}&pageSize=${PAGE_SIZE}`;
-      const res = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!res.ok) throw new Error(`Colors fetch failed: ${res.status}`);
-      const json = await res.json();
-      colors = Array.isArray(json.data) ? json.data.slice(0, PAGE_SIZE) : [];
-      page = json.page || p;
-      return colors;
-    } catch (err) {
-      console.error('Failed loading colors:', err);
+      const json = await fetchAPI(COLORS_URL, {
+        page: p,
+        pageSize: PAGE_SIZE,
+      });
+
+      colors = Array.isArray(json.data) ? json.data : [];
+      apiPage = json.page || p;
+      pageIndex = 0;
+
+    } catch (e) {
+      console.error('Failed loading colors:', e);
       colors = [];
-      return [];
     }
   }
 
   function renderSwatches() {
     colorsContainer.innerHTML = '';
-    pageLabel.textContent = `Page ${page}`;
+    pageLabel.textContent = `Page ${apiPage}`;
 
-    const visible = colors.slice(0, VISIBLE);
-    if (visible.length === 0) {
-      colorsContainer.innerHTML = '<div style="color:#666">No colors available.</div>';
+    const start = pageIndex * VISIBLE;
+    const slice = colors.slice(start, start + VISIBLE);
+
+    if (!slice.length) {
+      colorsContainer.innerHTML = '<div style="color:#666">No colors.</div>';
       return;
     }
 
-    visible.forEach((c, idx) => {
+    slice.forEach((c, idx) => {
       const hex = (c.hex || '').replace('#', '');
       const name = c.name || `Color ${idx + 1}`;
       const sw = document.createElement('button');
@@ -208,14 +211,14 @@ export default async function decorate(block) {
       sw.style.background = `#${hex}`;
       sw.addEventListener('click', () => applyPaintHex(hex));
 
-      const wrapper = document.createElement('div');
-      wrapper.style.display = 'flex';
-      wrapper.style.flexDirection = 'column';
-      wrapper.style.alignItems = 'center';
-      wrapper.style.fontSize = '12px';
-      wrapper.style.color = '#333';
-      wrapper.style.minWidth = '64px';
-      wrapper.style.gap = '6px';
+      const wrap = document.createElement('div');
+      wrap.style.display = 'flex';
+      wrap.style.flexDirection = 'column';
+      wrap.style.alignItems = 'center';
+      wrap.style.fontSize = '12px';
+      wrap.style.color = '#333';
+      wrap.style.minWidth = '64px';
+      wrap.style.gap = '6px';
 
       const lbl = document.createElement('div');
       lbl.textContent = name;
@@ -224,30 +227,36 @@ export default async function decorate(block) {
       lbl.style.textOverflow = 'ellipsis';
       lbl.style.textAlign = 'center';
 
-      wrapper.appendChild(sw);
-      wrapper.appendChild(lbl);
-      colorsContainer.appendChild(wrapper);
+      wrap.appendChild(sw);
+      wrap.appendChild(lbl);
+      colorsContainer.appendChild(wrap);
     });
   }
 
   prevBtn.addEventListener('click', async () => {
-    if (page <= 1) return;
-    page--;
-    await loadColors(page);
-    renderSwatches();
+    if (pageIndex > 0) {
+      pageIndex--;
+      return renderSwatches();
+    }
+
+    if (apiPage > 1) {
+      await loadApiPage(apiPage - 1);
+      return renderSwatches();
+    }
   });
 
   nextBtn.addEventListener('click', async () => {
-    page++;
-    const loaded = await loadColors(page);
-    if (!loaded || loaded.length === 0) {
-      page--;
-      return;
+    if ((pageIndex + 1) * VISIBLE < colors.length) {
+      pageIndex++;
+      return renderSwatches();
     }
+
+    await loadApiPage(apiPage + 1);
     renderSwatches();
   });
 
-  await loadColors(page);
+  await loadApiPage(apiPage);
   renderSwatches();
-  if (colors.length > 0 && colors[0].hex) applyPaintHex(colors[0].hex);
+
+  if (colors.length && colors[0].hex) applyPaintHex(colors[0].hex);
 }
