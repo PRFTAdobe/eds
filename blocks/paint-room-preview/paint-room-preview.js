@@ -1,8 +1,6 @@
-import { fetchAPI } from '/scripts/fetchApi.js';
+import { fetchColors } from '/scripts/fetchApi.js';
 
 export default async function decorate(block) {
-
-  const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json';
   const PAGE_SIZE = 30;
   const VISIBLE = 5;
 
@@ -25,8 +23,11 @@ export default async function decorate(block) {
     if (!controls) {
       controls = document.createElement('div');
       controls.className = 'bm-controls';
-      controls.innerHTML =
-        '<button id="bm-prev">Prev</button><span id="bm-page"></span><button id="bm-next">Next</button>';
+      controls.innerHTML = `
+        <button id="bm-prev">Prev</button>
+        <span id="bm-page"></span>
+        <button id="bm-next">Next</button>
+      `;
       root.appendChild(controls);
     }
 
@@ -65,14 +66,13 @@ export default async function decorate(block) {
     root.innerHTML = `
       <div style="border:1px dashed #ddd;padding:12px;border-radius:6px;color:#666;">
         Paint Room Preview: please select/upload <strong>Base Image</strong> and <strong>Mask Image</strong> in the block dialog.
-      </div>
-    `;
+      </div>`;
     return;
   }
 
   const canvas = root.querySelector('#room-canvas');
   const ctx = canvas.getContext?.('2d');
-  if (!ctx) return console.error('Canvas 2D not supported.');
+  if (!ctx) return;
 
   const prevBtn = root.querySelector('#bm-prev');
   const nextBtn = root.querySelector('#bm-next');
@@ -80,14 +80,13 @@ export default async function decorate(block) {
   const colorsContainer = root.querySelector('#bm-colors');
 
   root.style.maxWidth = '860px';
-  root.style.margin = '12px auto';
   canvas.style.width = '100%';
   canvas.style.display = 'block';
-  canvas.style.borderRadius = '6px';
   canvas.style.marginBottom = '12px';
+
   colorsContainer.style.display = 'flex';
-  colorsContainer.style.gap = '10px';
   colorsContainer.style.flexWrap = 'wrap';
+  colorsContainer.style.gap = '12px';
   colorsContainer.style.justifyContent = 'center';
 
   function loadImage(src) {
@@ -101,43 +100,30 @@ export default async function decorate(block) {
   }
 
   let imgBase, imgMask;
-  try {
-    [imgBase, imgMask] = await Promise.all([
-      loadImage(baseImage),
-      loadImage(maskImage),
-    ]);
-
-    block.querySelectorAll('img[data-aue-prop="baseImage"], img[data-aue-prop="maskImage"]').forEach(img => {
-      const wrapper = img.closest('picture, div') || img;
-      wrapper.style.display = 'none';
-    });
-
-  } catch (e) {
-    console.error('Failed to load base or mask image:', e);
-    root.innerHTML = `<div style="color:#b00">Error loading images for Paint Preview. Check image URLs and CORS.</div>`;
-    return;
-  }
+  [imgBase, imgMask] = await Promise.all([
+    loadImage(baseImage),
+    loadImage(maskImage),
+  ]);
 
   canvas.width = imgBase.width;
   canvas.height = imgBase.height;
   ctx.drawImage(imgBase, 0, 0);
 
-  function getMaskData() {
+  const maskData = (() => {
     const temp = document.createElement('canvas');
     temp.width = canvas.width;
     temp.height = canvas.height;
     const tctx = temp.getContext('2d');
-    tctx.drawImage(imgMask, 0, 0, temp.width, temp.height);
+    tctx.drawImage(imgMask, 0, 0);
     return tctx.getImageData(0, 0, temp.width, temp.height).data;
-  }
-  const maskData = getMaskData();
+  })();
 
   function hexToRgb(hex) {
     const h = hex.replace('#', '');
     return {
-      r: parseInt(h.substring(0, 2), 16),
-      g: parseInt(h.substring(2, 4), 16),
-      b: parseInt(h.substring(4, 6), 16),
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16),
     };
   }
 
@@ -148,6 +134,7 @@ export default async function decorate(block) {
   function applyPaintHex(hex) {
     const tgt = hexToRgb(hex.startsWith('#') ? hex : `#${hex}`);
     ctx.drawImage(imgBase, 0, 0);
+
     const w = canvas.width;
     const h = canvas.height;
     const imgData = ctx.getImageData(0, 0, w, h);
@@ -161,45 +148,31 @@ export default async function decorate(block) {
         data[i + 2] = blend(data[i + 2], tgt.b, maskVal);
       }
     }
+
     ctx.putImageData(imgData, 0, 0);
   }
 
-  let apiPage = 1;
-  let pageIndex = 0;
+  // ---------- Pagination + Fetch Colors ----------
+  let page = 1;
+  let total = 0;
   let colors = [];
 
-  async function loadApiPage(p = 1) {
-    try {
-      const json = await fetchAPI(COLORS_URL, {
-        page: p,
-        pageSize: PAGE_SIZE,
-      });
-
-      colors = Array.isArray(json.data) ? json.data : [];
-      apiPage = json.page || p;
-      pageIndex = 0;
-
-    } catch (e) {
-      console.error('Failed loading colors:', e);
-      colors = [];
-    }
+  async function loadPage(p) {
+    const json = await fetchColors(p, PAGE_SIZE); // new source
+    colors = Array.isArray(json.data) ? json.data : [];
+    total = json.total || colors.length;
+    page = json.page || p;
+    return colors;
   }
 
   function renderSwatches() {
     colorsContainer.innerHTML = '';
-    pageLabel.textContent = `Page ${apiPage}`;
+    pageLabel.textContent = `Page ${page}`;
 
-    const start = pageIndex * VISIBLE;
-    const slice = colors.slice(start, start + VISIBLE);
-
-    if (!slice.length) {
-      colorsContainer.innerHTML = '<div style="color:#666">No colors.</div>';
-      return;
-    }
-
-    slice.forEach((c, idx) => {
+    colors.slice(0, VISIBLE).forEach((c, idx) => {
       const hex = (c.hex || '').replace('#', '');
       const name = c.name || `Color ${idx + 1}`;
+
       const sw = document.createElement('button');
       sw.className = 'bm-swatch';
       sw.style.width = '48px';
@@ -207,7 +180,6 @@ export default async function decorate(block) {
       sw.style.borderRadius = '6px';
       sw.style.border = '1px solid #ddd';
       sw.style.cursor = 'pointer';
-      sw.style.boxShadow = '0 1px 2px rgba(0,0,0,0.08)';
       sw.style.background = `#${hex}`;
       sw.addEventListener('click', () => applyPaintHex(hex));
 
@@ -216,16 +188,13 @@ export default async function decorate(block) {
       wrap.style.flexDirection = 'column';
       wrap.style.alignItems = 'center';
       wrap.style.fontSize = '12px';
-      wrap.style.color = '#333';
-      wrap.style.minWidth = '64px';
-      wrap.style.gap = '6px';
+      wrap.style.maxWidth = '80px';
 
       const lbl = document.createElement('div');
       lbl.textContent = name;
-      lbl.style.maxWidth = '80px';
+      lbl.style.textAlign = 'center';
       lbl.style.overflow = 'hidden';
       lbl.style.textOverflow = 'ellipsis';
-      lbl.style.textAlign = 'center';
 
       wrap.appendChild(sw);
       wrap.appendChild(lbl);
@@ -234,29 +203,21 @@ export default async function decorate(block) {
   }
 
   prevBtn.addEventListener('click', async () => {
-    if (pageIndex > 0) {
-      pageIndex--;
-      return renderSwatches();
-    }
-
-    if (apiPage > 1) {
-      await loadApiPage(apiPage - 1);
-      return renderSwatches();
-    }
-  });
-
-  nextBtn.addEventListener('click', async () => {
-    if ((pageIndex + 1) * VISIBLE < colors.length) {
-      pageIndex++;
-      return renderSwatches();
-    }
-
-    await loadApiPage(apiPage + 1);
+    if (page <= 1) return;
+    await loadPage(page - 1);
     renderSwatches();
   });
 
-  await loadApiPage(apiPage);
+  nextBtn.addEventListener('click', async () => {
+    const loaded = await loadPage(page + 1);
+    if (loaded.length === 0) return;
+    renderSwatches();
+  });
+
+  await loadPage(page);
   renderSwatches();
 
-  if (colors.length && colors[0].hex) applyPaintHex(colors[0].hex);
+  if (colors.length > 0 && colors[0].hex) {
+    applyPaintHex(colors[0].hex);
+  }
 }
