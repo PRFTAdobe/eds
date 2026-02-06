@@ -60,10 +60,15 @@ export default async function decorate(block) {
     findImageFromMarkup('maskImage') ||
     '';
 
-  if (!baseImage || !maskImage) {
+  const shadingImage =
+    (block.dataset.shadingImage?.trim()) ||
+    (root.dataset.shadingImage?.trim()) ||
+    findImageFromMarkup('shadingImage') || '';
+
+  if (!baseImage || !maskImage || !shadingImage) {
     root.innerHTML = `
       <div style="border:1px dashed #ddd;padding:12px;border-radius:6px;color:#666;">
-        Paint Room Preview requires Base Image and Mask Image.
+        Paint Room Preview requires Base Image, Mask Image, and Shading Image.
       </div>`;
     return;
   }
@@ -93,11 +98,12 @@ export default async function decorate(block) {
     });
   }
 
-  let imgBase, imgMask;
+  let imgBase, imgMask, imgShade;
   try {
-    [imgBase, imgMask] = await Promise.all([
+    [imgBase, imgMask, imgShade] = await Promise.all([
       loadImage(baseImage),
       loadImage(maskImage),
+      loadImage(shadingImage),
     ]);
 
     block.querySelectorAll('img[data-aue-prop]').forEach(img => {
@@ -125,6 +131,16 @@ export default async function decorate(block) {
   }
   const maskData = getMaskData();
 
+  function getShadeData() {
+    const temp = document.createElement('canvas');
+    temp.width = canvas.width;
+    temp.height = canvas.height;
+    const tctx = temp.getContext('2d');
+    tctx.drawImage(imgShade, 0, 0, temp.width, temp.height);
+    return tctx.getImageData(0, 0, temp.width, temp.height).data;
+  }
+  const shadeData = getShadeData();
+
   function hexToRgb(hex) {
     const h = hex.replace('#', '');
     return {
@@ -139,18 +155,33 @@ export default async function decorate(block) {
 
   function applyPaintHex(hex) {
     const tgt = hexToRgb(hex.startsWith('#') ? hex : `#${hex}`);
+
+    // Step 1: reset base
     ctx.drawImage(imgBase, 0, 0);
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imgData.data;
 
+    // Step 2: apply flat paint using alpha mask
     for (let i = 0; i < data.length; i += 4) {
       const maskVal = maskData[i] / 255;
       if (maskVal > 0.03) {
-        data[i] = blend(data[i], tgt.r, maskVal);
-        data[i+1] = blend(data[i+1], tgt.g, maskVal);
-        data[i+2] = blend(data[i+2], tgt.b, maskVal);
+        data[i]     = blend(data[i],     tgt.r, maskVal);
+        data[i + 1] = blend(data[i + 1], tgt.g, maskVal);
+        data[i + 2] = blend(data[i + 2], tgt.b, maskVal);
       }
     }
+
+    // Step 3: multiply wall shading (lighting pass)
+    for (let i = 0; i < data.length; i += 4) {
+      const maskVal = maskData[i] / 255;
+      if (maskVal > 0.03) {
+        const shade = shadeData[i] / 255; // grayscale
+        data[i]     = Math.round(data[i]     * shade);
+        data[i + 1] = Math.round(data[i + 1] * shade);
+        data[i + 2] = Math.round(data[i + 2] * shade);
+      }
+    }
+
     ctx.putImageData(imgData, 0, 0);
   }
 
