@@ -351,6 +351,14 @@
         "label": "Paint Preview Mask Image",
         "description": "Black/white mask defining which areas to recolor.",
         "multi": false
+      },
+      {
+        "component": "reference",
+        "valueType": "url",
+        "name": "shadingImage",
+        "label": "Paint Preview Shading Image",
+        "description": "Shading image defining where to apply lights and shadows.",
+        "multi": false
       }
     ]
    }   
