@@ -29,6 +29,7 @@
   gap: 12px;
   justify-content: center;
   flex-wrap: nowrap;
+  margin: 0 10% 0 10%;
 }
 
 .bm-color {
@@ -60,7 +61,7 @@
     order: 3;
     width: 100%;
     justify-content: center;
-    margin-top: 12px;
+    margin: 12px 0 0 0;
     flex-wrap: wrap;
   }
 
