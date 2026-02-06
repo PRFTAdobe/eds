@@ -27,7 +27,6 @@ export default async function decorate(block) {
       controls.className = 'bm-controls';
       controls.innerHTML = `
         <button id="bm-prev">Prev</button>
-        <span id="bm-page"></span>
         <button id="bm-next">Next</button>`;
       root.appendChild(controls);
     }
@@ -79,7 +78,6 @@ export default async function decorate(block) {
 
   const prevBtn = root.querySelector('#bm-prev');
   const nextBtn = root.querySelector('#bm-next');
-  const pageLabel = root.querySelector('#bm-page');
   const colorsContainer = root.querySelector('#bm-colors');
 
   canvas.style.width = '100%';
@@ -206,8 +204,6 @@ export default async function decorate(block) {
 
   function renderSwatches() {
     colorsContainer.innerHTML = '';
-    pageLabel.textContent = `Page ${apiPage}.${pageIndex+1}`;
-
     const start = pageIndex * VISIBLE;
     const slice = colors.slice(start, start + VISIBLE);
 
