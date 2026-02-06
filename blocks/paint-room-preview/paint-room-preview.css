@@ -16,10 +16,19 @@
   margin-bottom: 20px;
 }
 
+.bm-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
 #bm-colors {
   display: flex;
   gap: 12px;
   justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .bm-color {
@@ -40,4 +49,26 @@
 
 .bm-swatch:hover {
   transform: scale(1.1);
+}
+
+@media (max-width: 700px) {
+  .bm-nav {
+    flex-wrap: wrap;
+  }
+
+  #bm-colors {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  #bm-prev {
+    order: 1;
+  }
+
+  #bm-next {
+    order: 2;
+  }
 }

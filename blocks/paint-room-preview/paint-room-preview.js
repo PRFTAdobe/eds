@@ -21,21 +21,16 @@ export default async function decorate(block) {
       root.appendChild(canvas);
     }
 
-    let controls = root.querySelector('.bm-controls');
-    if (!controls) {
-      controls = document.createElement('div');
-      controls.className = 'bm-controls';
-      controls.innerHTML = `
+    let nav = root.querySelector('.bm-nav');
+    if (!nav) {
+      nav = document.createElement('div');
+      nav.className = 'bm-nav';
+      nav.innerHTML = `
         <button id="bm-prev">Prev</button>
-        <button id="bm-next">Next</button>`;
-      root.appendChild(controls);
-    }
-
-    let colors = root.querySelector('#bm-colors');
-    if (!colors) {
-      colors = document.createElement('div');
-      colors.id = 'bm-colors';
-      root.appendChild(colors);
+        <div id="bm-colors"></div>
+        <button id="bm-next">Next</button>
+      `;
+      root.appendChild(nav);
     }
     return root;
   }
