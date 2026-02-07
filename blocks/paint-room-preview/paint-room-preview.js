@@ -188,17 +188,12 @@ export default async function decorate(block) {
         page: p,
         pageSize: PAGE_SIZE,
       });
-  
       colors = Array.isArray(json.data) ? json.data : [];
       apiPage = json.page || p;
       pageIndex = 0;
-  
-      // If API returns fewer than PAGE_SIZE, there is no next page
-      hasNextPage = colors.length === PAGE_SIZE;
     } catch (e) {
       console.error(e);
       colors = [];
-      hasNextPage = false;
     }
   }
 
@@ -209,7 +204,6 @@ export default async function decorate(block) {
 
     if (slice.length === 0) {
       colorsContainer.innerHTML = `<div>No colors</div>`;
-      updateNavState();
       return;
     }
 
@@ -243,13 +237,9 @@ export default async function decorate(block) {
       wrap.appendChild(lbl);
       colorsContainer.appendChild(wrap);
     });
-
-    updateNavState();
   }
 
   prevBtn.addEventListener('click', async () => {
-    if (prevBtn.disabled) return;
-
     if (pageIndex > 0) {
       pageIndex--;
       renderSwatches();
@@ -263,8 +253,6 @@ export default async function decorate(block) {
   });
 
   nextBtn.addEventListener('click', async () => {
-    if (nextBtn.disabled) return;
-
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
     if (pageIndex < maxIndex) {
       pageIndex++;
@@ -274,23 +262,6 @@ export default async function decorate(block) {
     await loadApiPage(apiPage + 1);
     if (colors.length > 0) renderSwatches();
   });
-
-
-  function updateNavState() {
-    const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-  
-    // Disable prev only at absolute beginning
-    prevBtn.disabled = (apiPage === 1 && pageIndex === 0);
-  
-    // Disable next only at absolute end
-    nextBtn.disabled = (
-      pageIndex === maxIndex &&
-      hasNextPage === false
-    );
-  
-    prevBtn.setAttribute('aria-disabled', prevBtn.disabled);
-    nextBtn.setAttribute('aria-disabled', nextBtn.disabled);
-  }
 
   await loadApiPage(apiPage);
   renderSwatches();

@@ -52,12 +52,6 @@
   transform: scale(1.1);
 }
 
-.bm-nav button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
 @media (max-width: 900px) {
   .bm-nav {
     flex-wrap: wrap;
