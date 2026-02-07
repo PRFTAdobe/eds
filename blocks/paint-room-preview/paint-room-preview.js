@@ -188,12 +188,17 @@ export default async function decorate(block) {
         page: p,
         pageSize: PAGE_SIZE,
       });
+  
       colors = Array.isArray(json.data) ? json.data : [];
       apiPage = json.page || p;
       pageIndex = 0;
+  
+      // If API returns fewer than PAGE_SIZE, there is no next page
+      hasNextPage = colors.length === PAGE_SIZE;
     } catch (e) {
       console.error(e);
       colors = [];
+      hasNextPage = false;
     }
   }
 
@@ -270,15 +275,19 @@ export default async function decorate(block) {
     if (colors.length > 0) renderSwatches();
   });
 
+
   function updateNavState() {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-
-    // Prev is disabled if we're at the very beginning
+  
+    // Disable prev only at absolute beginning
     prevBtn.disabled = (apiPage === 1 && pageIndex === 0);
-
-    // Next is disabled if we're at the very end
-    nextBtn.disabled = (pageIndex === maxIndex && colors.length < PAGE_SIZE);
-
+  
+    // Disable next only at absolute end
+    nextBtn.disabled = (
+      pageIndex === maxIndex &&
+      hasNextPage === false
+    );
+  
     prevBtn.setAttribute('aria-disabled', prevBtn.disabled);
     nextBtn.setAttribute('aria-disabled', nextBtn.disabled);
   }
