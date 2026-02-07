@@ -204,6 +204,7 @@ export default async function decorate(block) {
 
     if (slice.length === 0) {
       colorsContainer.innerHTML = `<div>No colors</div>`;
+      updateNavState();
       return;
     }
 
@@ -237,9 +238,13 @@ export default async function decorate(block) {
       wrap.appendChild(lbl);
       colorsContainer.appendChild(wrap);
     });
+
+    updateNavState();
   }
 
   prevBtn.addEventListener('click', async () => {
+    if (prevBtn.disabled) return;
+
     if (pageIndex > 0) {
       pageIndex--;
       renderSwatches();
@@ -253,6 +258,8 @@ export default async function decorate(block) {
   });
 
   nextBtn.addEventListener('click', async () => {
+    if (nextBtn.disabled) return;
+
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
     if (pageIndex < maxIndex) {
       pageIndex++;
@@ -262,6 +269,19 @@ export default async function decorate(block) {
     await loadApiPage(apiPage + 1);
     if (colors.length > 0) renderSwatches();
   });
+
+  function updateNavState() {
+    const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
+
+    // Prev is disabled if we're at the very beginning
+    prevBtn.disabled = (apiPage === 1 && pageIndex === 0);
+
+    // Next is disabled if we're at the very end
+    nextBtn.disabled = (pageIndex === maxIndex && colors.length < PAGE_SIZE);
+
+    prevBtn.setAttribute('aria-disabled', prevBtn.disabled);
+    nextBtn.setAttribute('aria-disabled', nextBtn.disabled);
+  }
 
   await loadApiPage(apiPage);
   renderSwatches();
