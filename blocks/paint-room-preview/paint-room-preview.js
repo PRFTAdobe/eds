@@ -245,7 +245,7 @@ export default async function decorate(block) {
 
   prevBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-
+    
     if (pageIndex < 1) {
       prevBtn.disabled = true;
       return;
@@ -254,7 +254,7 @@ export default async function decorate(block) {
     if (pageIndex > 0) {
       pageIndex--;
       renderSwatches();
-      if (pageIndex < Math.floor((colors.length - 5))) {
+      if (pageIndex < maxIndex) {
         nextBtn.disabled = false;
       }
       return;
@@ -268,7 +268,7 @@ export default async function decorate(block) {
 
   nextBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-    if (pageIndex === Math.floor((colors.length - 5))) {
+    if (pageIndex === maxIndex) {
       nextBtn.disabled = true;
       return;
     }
