@@ -268,10 +268,6 @@ export default async function decorate(block) {
 
   nextBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-    if (pageIndex === (maxIndex - 1)) {
-      nextBtn.disabled = true;
-      return;
-    }
   
     if (pageIndex < maxIndex) {
       pageIndex++;
@@ -279,6 +275,9 @@ export default async function decorate(block) {
         prevBtn.disabled = false;
       }
       renderSwatches();
+      if (pageIndex === (maxIndex - 1)) {
+        nextBtn.disabled = true;
+      }
       return;
     }
     await loadApiPage(apiPage + 1);
