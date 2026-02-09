@@ -243,7 +243,7 @@ export default async function decorate(block) {
     if (pageIndex > 0) {
       pageIndex--;
       renderSwatches();
-      if (pageIndex < Math.floor((colors.length - 1) / VISIBLE);) {
+      if (pageIndex < Math.floor((colors.length - 1) / VISIBLE)) {
         nextBtn.disabled = false;
       }
       return;
