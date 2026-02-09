@@ -239,10 +239,14 @@ export default async function decorate(block) {
     });
   }
 
+  if (pageIndex < 1) {
+      prevBtn.disabled = true;
+  }
+
   prevBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
 
-    if (pageIndex <= 1) {
+    if (pageIndex < 1) {
       prevBtn.disabled = true;
       return;
     }
