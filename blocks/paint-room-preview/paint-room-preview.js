@@ -21,22 +21,16 @@ export default async function decorate(block) {
       root.appendChild(canvas);
     }
 
-    let controls = root.querySelector('.bm-controls');
-    if (!controls) {
-      controls = document.createElement('div');
-      controls.className = 'bm-controls';
-      controls.innerHTML = `
+    let nav = root.querySelector('.bm-nav');
+    if (!nav) {
+      nav = document.createElement('div');
+      nav.className = 'bm-nav';
+      nav.innerHTML = `
         <button id="bm-prev">Prev</button>
-        <span id="bm-page"></span>
-        <button id="bm-next">Next</button>`;
-      root.appendChild(controls);
-    }
-
-    let colors = root.querySelector('#bm-colors');
-    if (!colors) {
-      colors = document.createElement('div');
-      colors.id = 'bm-colors';
-      root.appendChild(colors);
+        <div id="bm-colors"></div>
+        <button id="bm-next">Next</button>
+      `;
+      root.appendChild(nav);
     }
     return root;
   }
@@ -79,7 +73,6 @@ export default async function decorate(block) {
 
   const prevBtn = root.querySelector('#bm-prev');
   const nextBtn = root.querySelector('#bm-next');
-  const pageLabel = root.querySelector('#bm-page');
   const colorsContainer = root.querySelector('#bm-colors');
 
   canvas.style.width = '100%';
@@ -206,8 +199,6 @@ export default async function decorate(block) {
 
   function renderSwatches() {
     colorsContainer.innerHTML = '';
-    pageLabel.textContent = `Page ${apiPage}.${pageIndex+1}`;
-
     const start = pageIndex * VISIBLE;
     const slice = colors.slice(start, start + VISIBLE);
 
@@ -249,14 +240,8 @@ export default async function decorate(block) {
   }
 
   prevBtn.addEventListener('click', async () => {
-
-    prevBtn.style.opacity = "0.5";
-    
     if (pageIndex > 0) {
       pageIndex--;
-      if (pageIndex <= 1) {
-        prevBtn.style.opacity = "0.5";
-      }
       renderSwatches();
       return;
     }
