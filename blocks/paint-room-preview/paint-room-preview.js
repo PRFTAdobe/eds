@@ -239,12 +239,11 @@ export default async function decorate(block) {
     });
   }
 
-  const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
   prevBtn.addEventListener('click', async () => {
     if (pageIndex > 0) {
       pageIndex--;
       renderSwatches();
-      if (pageIndex < maxIndex) {
+      if (pageIndex < Math.floor((colors.length - 1) / VISIBLE);) {
         nextBtn.disabled = false;
       }
       return;
@@ -257,6 +256,7 @@ export default async function decorate(block) {
   });
 
   nextBtn.addEventListener('click', async () => {
+    const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
     if (pageIndex === maxIndex) {
       nextBtn.disabled = true;
       return;
