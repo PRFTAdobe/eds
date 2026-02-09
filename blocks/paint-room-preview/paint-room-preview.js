@@ -1,7 +1,6 @@
 import { fetchFromApi } from '../../scripts/aem.js';
 
 export default async function decorate(block) {
-
   const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json';
   const PAGE_SIZE = 30;
   const VISIBLE = 5;
@@ -42,22 +41,17 @@ export default async function decorate(block) {
     return img ? img.getAttribute('src') : '';
   }
 
-  const baseImage =
-    (block.dataset.baseImage?.trim()) ||
-    (root.dataset.baseImage?.trim()) ||
-    findImageFromMarkup('baseImage') ||
-    '';
+  const baseImage = (block.dataset.baseImage?.trim())
+    || (root.dataset.baseImage?.trim())
+    || findImageFromMarkup('baseImage') || '';
 
-  const maskImage =
-    (block.dataset.maskImage?.trim()) ||
-    (root.dataset.maskImage?.trim()) ||
-    findImageFromMarkup('maskImage') ||
-    '';
+  const maskImage = (block.dataset.maskImage?.trim())
+    || (root.dataset.maskImage?.trim())
+    || findImageFromMarkup('maskImage') || '';
 
-  const shadingImage =
-    (block.dataset.shadingImage?.trim()) ||
-    (root.dataset.shadingImage?.trim()) ||
-    findImageFromMarkup('shadingImage') || '';
+  const shadingImage = (block.dataset.shadingImage?.trim())
+    || (root.dataset.shadingImage?.trim())
+    || findImageFromMarkup('shadingImage') || '';
 
   if (!baseImage || !maskImage || !shadingImage) {
     root.innerHTML = `
@@ -91,7 +85,9 @@ export default async function decorate(block) {
     });
   }
 
-  let imgBase, imgMask, imgShade;
+  let imgBase;
+  let imgMask;
+  let imgShade;
   try {
     [imgBase, imgMask, imgShade] = await Promise.all([
       loadImage(baseImage),
@@ -99,14 +95,14 @@ export default async function decorate(block) {
       loadImage(shadingImage),
     ]);
 
-    block.querySelectorAll('img[data-aue-prop]').forEach(img => {
+    block.querySelectorAll('img[data-aue-prop]').forEach((img) => {
       const wrap = img.closest('picture,div') || img;
       wrap.style.display = 'none';
     });
-
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error(e);
-    root.innerHTML = `<div style="color:#b00">Error loading images.</div>`;
+    root.innerHTML = '<div style="color:#b00">Error loading images.</div>';
     return;
   }
 
@@ -152,13 +148,13 @@ export default async function decorate(block) {
     // Step 1: reset base
     ctx.drawImage(imgBase, 0, 0);
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data;
+    const { data } = imgData;
 
     // Step 2: apply flat paint using alpha mask
     for (let i = 0; i < data.length; i += 4) {
       const maskVal = maskData[i] / 255;
       if (maskVal > 0.03) {
-        data[i]     = blend(data[i],     tgt.r, maskVal);
+        data[i] = blend(data[i], tgt.r, maskVal);
         data[i + 1] = blend(data[i + 1], tgt.g, maskVal);
         data[i + 2] = blend(data[i + 2], tgt.b, maskVal);
       }
@@ -169,7 +165,7 @@ export default async function decorate(block) {
       const maskVal = maskData[i] / 255;
       if (maskVal > 0.03) {
         const shade = shadeData[i] / 255; // grayscale
-        data[i]     = Math.round(data[i]     * shade);
+        data[i] = Math.round(data[i] * shade);
         data[i + 1] = Math.round(data[i + 1] * shade);
         data[i + 2] = Math.round(data[i + 2] * shade);
       }
@@ -192,6 +188,7 @@ export default async function decorate(block) {
       apiPage = json.page || p;
       pageIndex = 0;
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(e);
       colors = [];
     }
@@ -203,13 +200,13 @@ export default async function decorate(block) {
     const slice = colors.slice(start, start + VISIBLE);
 
     if (slice.length === 0) {
-      colorsContainer.innerHTML = `<div>No colors</div>`;
+      colorsContainer.innerHTML = '<div>No colors</div>';
       return;
     }
 
     slice.forEach((c, idx) => {
       const hex = (c.hex || '').replace('#', '');
-      const name = c.name || `Color ${idx+1}`;
+      const name = c.name || `Color ${idx + 1}`;
       const sw = document.createElement('button');
       sw.style.width = '48px';
       sw.style.height = '48px';
@@ -240,14 +237,14 @@ export default async function decorate(block) {
   }
 
   if (pageIndex < 1) {
-      prevBtn.disabled = true;
+    prevBtn.disabled = true;
   }
 
   prevBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-        
+
     if (pageIndex > 0) {
-      pageIndex--;
+      pageIndex -= 1;
       renderSwatches();
       if (pageIndex < 1) {
         prevBtn.disabled = true;
@@ -266,9 +263,9 @@ export default async function decorate(block) {
 
   nextBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-  
+
     if (pageIndex < maxIndex) {
-      pageIndex++;
+      pageIndex += 1;
       if (pageIndex >= 1) {
         prevBtn.disabled = false;
       }

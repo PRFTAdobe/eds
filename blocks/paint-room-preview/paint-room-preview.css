@@ -29,7 +29,7 @@
   gap: 12px;
   justify-content: center;
   flex-wrap: nowrap;
-  margin: 0 10% 0 10%;
+  margin: 0 10%;
 }
 
 .bm-color {
@@ -52,7 +52,7 @@
   transform: scale(1.1);
 }
 
-@media (max-width: 900px) {
+@media (width <= 900px) {    
   .bm-nav {
     flex-wrap: wrap;
   }
@@ -61,7 +61,7 @@
     order: 3;
     width: 100%;
     justify-content: center;
-    margin: 12px 0 0 0;
+    margin: 12px 0 0;
     flex-wrap: wrap;
   }
 

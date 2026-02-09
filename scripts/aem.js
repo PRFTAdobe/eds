@@ -693,11 +693,11 @@ async function fetchFromApi(url, { page, pageSize, params = {} } = {}) {
   if (page !== undefined) query.set('page', page);
   if (pageSize !== undefined) query.set('pageSize', pageSize);
 
-  for (const [k, v] of Object.entries(params)) {
+  Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) {
       query.set(k, v);
     }
-  }
+  });
 
   const fullUrl = query.toString()
     ? `${url}?${query.toString()}`
@@ -711,7 +711,7 @@ async function fetchFromApi(url, { page, pageSize, params = {} } = {}) {
     throw new Error(`fetchAPI failed: ${res.status} ${res.statusText}`);
   }
 
-  return await res.json();
+  return res.json();
 }
 
 init();
@@ -740,5 +740,5 @@ export {
   toClassName,
   waitForFirstImage,
   wrapTextNodes,
-  fetchFromApi
+  fetchFromApi,
 };
