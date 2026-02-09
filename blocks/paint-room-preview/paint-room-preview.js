@@ -240,11 +240,13 @@ export default async function decorate(block) {
   }
 
   prevBtn.addEventListener('click', async () => {
-    if (pageIndex < 0) {
-      prevBtn.style.opacity = "0.5";
-    }
+    prevBtn.style.opacity = "0.5";
+
     if (pageIndex > 0) {
       pageIndex--;
+      if (pageIndex === 0) {
+        prevBtn.style.opacity = "0.5";
+      }
       renderSwatches();
       return;
     }
