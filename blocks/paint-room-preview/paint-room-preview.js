@@ -240,7 +240,7 @@ export default async function decorate(block) {
   }
 
   prevBtn.addEventListener('click', async () => {
-    if (pageIndex == 0) {
+    if (pageIndex < 0) {
       prevBtn.style.opacity = "0.5";
     }
     if (pageIndex > 0) {
