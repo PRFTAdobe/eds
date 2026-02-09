@@ -1,6 +1,5 @@
 import { fetchFromApi } from '../../scripts/aem.js';
 
-
 export default async function decorate(block) {
   const COLORS_URL = 'https://devopsdrops.tech/colorapi/colors.json';
   const PAGE_SIZE = 30;
