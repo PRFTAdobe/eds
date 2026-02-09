@@ -245,15 +245,13 @@ export default async function decorate(block) {
 
   prevBtn.addEventListener('click', async () => {
     const maxIndex = Math.floor((colors.length - 1) / VISIBLE);
-    
-    if (pageIndex < 0) {
-      prevBtn.disabled = true;
-      return;
-    }
-    
+        
     if (pageIndex > 0) {
       pageIndex--;
       renderSwatches();
+      if (pageIndex < 1) {
+        prevBtn.disabled = true;
+      }
       if (pageIndex < maxIndex) {
         nextBtn.disabled = false;
       }
