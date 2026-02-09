@@ -45,14 +45,12 @@ export default async function decorate(block) {
   const baseImage =
     (block.dataset.baseImage?.trim()) ||
     (root.dataset.baseImage?.trim()) ||
-    findImageFromMarkup('baseImage') ||
-    '';
+    findImageFromMarkup('baseImage') || '';
 
   const maskImage =
     (block.dataset.maskImage?.trim()) ||
     (root.dataset.maskImage?.trim()) ||
-    findImageFromMarkup('maskImage') ||
-    '';
+    findImageFromMarkup('maskImage') || '';
 
   const shadingImage =
     (block.dataset.shadingImage?.trim()) ||
